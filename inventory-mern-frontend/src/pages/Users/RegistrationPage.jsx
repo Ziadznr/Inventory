@@ -1,14 +1,14 @@
 import React, {Fragment, lazy, Suspense} from 'react';
 import LazyLoader from "../../components/MasterLayout/LazyLoader";
-const NotFound =lazy(() => import('../../components/NotFound/NotFound'));
-const NotFoundPage = () => {
+const Registration =lazy(() => import('../../components/Users/Registration'));
+const RegistrationPage = () => {
     return (
         <Fragment>
             <Suspense fallback={<LazyLoader/>}>
-                <NotFound/>
+                <Registration/>
             </Suspense>
         </Fragment>
     );
 };
 
-export default NotFoundPage;
+export default RegistrationPage;
