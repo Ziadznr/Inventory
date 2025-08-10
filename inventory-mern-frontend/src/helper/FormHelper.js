@@ -29,6 +29,13 @@ class FormHelper{
     }
 }
 
+const formHelper = new FormHelper();
 
-
-export const {IsEmpty,IsEmail,IsMobile,ErrorToast,SuccessToast,getBase64}=FormHelper;
+export const {
+  IsEmpty,
+  IsEmail,
+  IsMobile,
+  ErrorToast,
+  SuccessToast,
+  getBase64
+} = formHelper;

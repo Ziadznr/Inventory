@@ -1,34 +1,45 @@
-class SessionHelper{
-    setToken(token){
-        localStorage.setItem("token",token)
+class SessionHelper {
+    setToken(token) {
+        localStorage.setItem("token", token);
     }
-    getToken(){
-        return localStorage.getItem("token")
+    getToken() {
+        return localStorage.getItem("token");
     }
-    setUserDetails(UserDetails){
-        localStorage.setItem("UserDetails",JSON.stringify(UserDetails))
+    setUserDetails(UserDetails) {
+        localStorage.setItem("UserDetails", JSON.stringify(UserDetails));
     }
-    getUserDetails(){
-        return JSON.parse(localStorage.getItem("UserDetails"))
+   getUserDetails() {
+    const userDetails = localStorage.getItem("UserDetails");
+    if (!userDetails || userDetails === "undefined") {
+        return null;
     }
-    setEmail(Email){
-        localStorage.setItem("Email",Email)
-    }
-    getEmail(){
-        return localStorage.getItem("Email")
-    }
-    setOTP(OTP){
-        localStorage.setItem("OTP",OTP)
-    }
-    getOTP(){
-        return localStorage.getItem("OTP")
-    }
-    removeSessions=()=>{
-        localStorage.clear();
-        window.location.href="/login"
+    try {
+        return JSON.parse(userDetails);
+    } catch (error) {
+        console.error("Failed to parse UserDetails:", error);
+        return null;
     }
 }
 
+    setEmail(Email) {
+        localStorage.setItem("Email", Email);
+    }
+    getEmail() {
+        return localStorage.getItem("Email");
+    }
+    setOTP(OTP) {
+        localStorage.setItem("OTP", OTP);
+    }
+    getOTP() {
+        return localStorage.getItem("OTP");
+    }
+    removeSessions = () => {
+        localStorage.clear();
+        window.location.href = "/login";
+    };
+}
+
+const sessionHelper = new SessionHelper();
 
 export const {
     setEmail,
@@ -40,4 +51,4 @@ export const {
     setUserDetails,
     getUserDetails,
     removeSessions
-} = SessionHelper;
+} = sessionHelper;

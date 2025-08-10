@@ -39,3 +39,6 @@ export const dashboardSlice=createSlice({
         }
     }
 })
+
+export const {SetExpenseChart,SetSaleChart,SetPurchaseChart,SetReturnChart,SetExpenseTotal,SetPurchaseTotal,SetReturnTotal,SetSaleTotal}=dashboardSlice.actions;
+export default dashboardSlice.reducer;

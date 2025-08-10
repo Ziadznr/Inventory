@@ -1,9 +1,12 @@
 import React, { Fragment, useRef } from 'react';
 import { Accordion, Container, Navbar } from 'react-bootstrap';
 import { NavLink } from 'react-router-dom';
-import {AiOutlineBank, AiOutlineLogout, AiOutlineMenu, AiOutlineUser} from 'react-icons/ai';
-import {BsBagPlus, BsBagX, BsBox, BsCartPlus, BsCircle, BsGraphUp, BsPeople} from 'react-icons/bs';
-import {AiOutlineUnorderedList, IoCreateOutline, RiDashboardLine, TbTruckDelivery} from 'react-icons/all';
+import { AiOutlineBank, AiOutlineLogout, AiOutlineMenu, AiOutlineUser, AiOutlineUnorderedList } from 'react-icons/ai';
+import { BsBagPlus, BsBagX, BsBox, BsCartPlus, BsCircle, BsGraphUp, BsPeople } from 'react-icons/bs';
+import { IoCreateOutline } from 'react-icons/io5';
+import { RiDashboardLine } from 'react-icons/ri';
+import { TbTruckDelivery } from 'react-icons/tb';
+
 import logo from "../../assets/images/Logo.svg"
 import {getUserDetails, removeSessions} from "../../helper/SessionHelper";
 const MasterLayout = (props) => {
@@ -263,11 +266,13 @@ const MasterLayout = (props) => {
 
             <div className="float-right h-auto d-flex align-items-center">
               <div className="user-dropdown">
-                <img className="icon-nav-img icon-nav" src={getUserDetails()['photo']} alt=""/>
+                <img className="icon-nav-img" src={getUserDetails()?.photo || "defaultPhoto.png"} alt="User" />
+
                 <div className="user-dropdown-content ">
                   <div className="mt-4 text-center">
-                    <img className="icon-nav-img" src={getUserDetails()['photo']} alt=""/>
-                    <h6>{getUserDetails()['firstName']}</h6>
+                    <img className="icon-nav-img" src={getUserDetails()?.photo || "defaultPhoto.png"} alt="User" />
+                    <h6>{getUserDetails()?.firstName ?? 'Guest'}</h6>
+
                     <hr className="user-dropdown-divider  p-0"/>
                   </div>
                   <NavLink to="/Profile" className="side-bar-item">

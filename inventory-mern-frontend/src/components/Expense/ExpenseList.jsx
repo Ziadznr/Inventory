@@ -2,7 +2,7 @@ import React, {Fragment, useEffect, useState} from 'react';
 import {DeleteExpenseRequest, ExpenseListRequest} from "../../APIRequest/ExpenseAPIRequest";
 import {useSelector} from "react-redux";
 import {Link} from "react-router-dom";
-import {AiOutlineDelete, AiOutlineEdit} from "react-icons/all";
+import {AiOutlineDelete, AiOutlineEdit} from "react-icons/ai";
 import ReactPaginate from "react-paginate";
 import CurrencyFormat from "react-currency-format";
 import {DeleteAlert} from "../../helper/DeleteAlert";
@@ -22,7 +22,7 @@ const ExpenseList = () => {
     let Total=useSelector((state)=>(state.expense.ListTotal))
 
     const handlePageClick = async (event) => {
-        debugger;
+        
         await ExpenseListRequest(event.selected + 1, perPage, searchKeyword)
     };
 

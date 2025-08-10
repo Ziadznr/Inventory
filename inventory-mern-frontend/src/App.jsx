@@ -3,7 +3,7 @@ import { getToken } from "./helper/SessionHelper";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import NotFoundPage from "./pages/NotFound/NotFoundPage";
-import FullscreenLoader from "./components/MasterLayout/FullScreenLoader";
+import FullscreenLoader from "./components/MasterLayout/FullscreenLoader";
 import LoginPage from "./pages/Users/LoginPage";
 import RegistrationPage from "./pages/Users/RegistrationPage";
 import SendOTPPage from "./pages/Users/SendOTPPage";
