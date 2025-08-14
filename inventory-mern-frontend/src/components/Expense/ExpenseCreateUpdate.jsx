@@ -35,18 +35,23 @@ const ExpenseCreateUpdate = () => {
 
 
     const SaveChange = async () => {
-        if(IsEmpty(FormValue.TypeID)){
-            ErrorToast("Expense Type Required !")
-        }
-        else if(FormValue.Amount===0){
-            ErrorToast("Expense Amount Required !")
-        }
-        else {
-            if(await CreateExpenseRequest(FormValue,ObjectID)){
-                navigate("/ExpenseListPage")
-            }
-        }
+    if (IsEmpty(FormValue.TypeID)) {
+        ErrorToast("Expense Type Required !");
+        return;
     }
+    if (!FormValue.Amount || Number(FormValue.Amount) <= 0) {
+        ErrorToast("Expense Amount Required !");
+        return;
+    }
+
+    const success = await CreateExpenseRequest(FormValue, ObjectID);
+    console.log("CreateExpenseRequest result:", success); // DEBUG
+
+    if (success) {
+        navigate("/ExpenseListPage");
+    }
+};
+
 
 
 

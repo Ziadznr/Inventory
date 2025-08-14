@@ -18,7 +18,7 @@ export const brandSlice=createSlice({
         OnChangeBrandInput:(state,action)=>{
             state.FormValue[`${action.payload.Name}`]=action.payload.Value;
         },
-        ResetBrandFormValue:(state,action)=>{
+        ResetBrandFormValue:(state)=>{
             Object.keys(state.FormValue).forEach((i) => state.FormValue[i] = "");
         }
     }

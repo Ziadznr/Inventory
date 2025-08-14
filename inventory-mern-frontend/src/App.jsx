@@ -34,7 +34,8 @@ import SalesListPage from "./pages/Sales/SalesListPage";
 import SupplierCreateUpdatePage from "./pages/Supplier/SupplierCreateUpdatePage";
 import SupplierListPage from "./pages/Supplier/SupplierListPage";
 import ExpenseTypeListPage from "./pages/ExpenseType/ExpenseTypeListPage";
-
+import DepartmentListPage from "./pages/Department/DepartmentListPage";
+import DepartmentCreatePage from "./pages/Department/DepartmentCreatePage";
 
 const App = () => {
   if (getToken()) {
@@ -50,6 +51,9 @@ const App = () => {
 
             <Route path="/CategoryCreateUpdatePage" element={<CategoryCreateUpdatePage />} />
             <Route path="/CategoryListPage" element={<CategoryListPage />} />
+
+            <Route path="/department-list" element={<DepartmentListPage />} />
+            <Route path="/DepartmentCreatePage" element={<DepartmentCreatePage />} />
 
             <Route path="/CustomerCreateUpdatePage" element={<CustomerCreateUpdatePage />} />
             <Route path="/CustomerListPage" element={<CustomerListPage />} />

@@ -38,13 +38,25 @@ exports.CustomerDetailsByID=async(req,res)=>{
 }
 
 exports.DeleteCustomer = async (req, res) => {
-  let DeleteID = req.params.id;
-  let ObjectId=mongoose.Types.ObjectId;
-  let CheckAssociate = await CheckAssociationService({CustomerID: ObjectId(DeleteID)}, SalesModel);
-  if (CheckAssociate) {
-    return res.status(400).json({ message: "This Brand is associated with Products, cannot be deleted." });
-  }else {
-    const Result = await DeleteService(req, DataModel);
-    res.status(200).json(Result);
+  try {
+    const DeleteID = req.params.id;
+
+    // Proper ObjectId conversion
+    const CheckAssociate = await CheckAssociationService(
+      { CustomerID: new mongoose.Types.ObjectId(DeleteID) },
+      SalesModel
+    );
+
+    if (CheckAssociate) {
+      return res.status(400).json({
+        message: "This Customer is associated with Sales, cannot be deleted.",
+      });
+    } else {
+      const Result = await DeleteService(req, DataModel);
+      return res.status(200).json(Result);
+    }
+  } catch (error) {
+    console.error("DeleteCustomer error:", error);
+    return res.status(500).json({ status: "error", data: error.toString() });
   }
-}
+};

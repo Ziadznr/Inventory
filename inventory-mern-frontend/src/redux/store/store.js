@@ -13,6 +13,7 @@ import purchaseReducer from "../state-slice/purchase-slice";
 import reportReducer from "../state-slice/report-slice";
 import returnReducer from "../state-slice/return-slice"
 import saleReducer from "../state-slice/sale-slice"
+import departmentReducer from "../state-slice/department-slice"
 
 
 export default configureStore({
@@ -31,5 +32,6 @@ export default configureStore({
         product:productReducer,
         return:returnReducer,
         sale:saleReducer,
+        department:departmentReducer
     }
 })

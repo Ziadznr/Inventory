@@ -20,9 +20,9 @@ export const customerSlice=createSlice({
             state.ListTotal=action.payload
         },
         OnChangeCustomerInput:(state,action)=>{
-            state.FormValue[`${action.payload.Name}`]=action.payload.Value;
-        },
-        ResetFormValue:(state,action)=>{
+    state.FormValue[action.payload.Name] = action.payload.Value;
+},
+        ResetFormValue:(state)=>{
             Object.keys(state.FormValue).forEach((i)=>state.FormValue[i]="")
         }
     }

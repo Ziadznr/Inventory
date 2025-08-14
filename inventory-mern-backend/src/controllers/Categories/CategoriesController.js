@@ -40,7 +40,7 @@ exports.CategoriesDetailsByID=async(req,res)=>{
 exports.DeleteCategories = async (req, res) => {
   let DeleteID = req.params.id;
   let ObjectId=mongoose.Types.ObjectId;
-  let CheckAssociate = await CheckAssociationService({CategoryID: ObjectId(DeleteID)}, ProductsModel);
+  let CheckAssociate = await CheckAssociationService({CategoryID:new ObjectId(DeleteID)}, ProductsModel);
   if (CheckAssociate) {
     return res.status(400).json({ message: "This Category is associated with Products, cannot be deleted." });
   }else {

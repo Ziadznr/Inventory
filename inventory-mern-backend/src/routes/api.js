@@ -11,6 +11,7 @@ const ProductsController=require('../controllers/Products/ProductsController.js'
 const PurchasesController=require('../controllers/Purchases/PurchasesController.js')
 const SalesController=require('../controllers/Sales/SalesController.js')
 const ReturnsController=require('../controllers/Returns/ReturnsController.js') 
+const DepartmentController = require('../controllers/Departments/DepartmentController');
 
 
 const router=express.Router();
@@ -40,6 +41,11 @@ router.get("/CategoriesList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddlewar
 router.get("/CategoriesDropDown",AuthVerifyMiddleware,CategoriesController.CategoriesDropdown)
 router.get("/DeleteCategories/:id",AuthVerifyMiddleware,CategoriesController.DeleteCategories)
 router.get("/CategoriesDetailsByID/:id",AuthVerifyMiddleware,CategoriesController.CategoriesDetailsByID)
+
+// Departments
+router.post('/CreateDepartment', DepartmentController.CreateDepartment);
+router.get('/DepartmentList/:pageNo/:perPage/:searchKeyword', DepartmentController.ListDepartments);
+router.delete('/delete/:id', DepartmentController.DeleteDepartment);
 
 
 // Customers

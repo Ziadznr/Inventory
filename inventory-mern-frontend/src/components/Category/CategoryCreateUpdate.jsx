@@ -1,43 +1,49 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import store from "../../redux/store/store";
-import {useSelector} from "react-redux";
-import {useNavigate} from "react-router-dom";
-import {ErrorToast, IsEmpty} from "../../helper/FormHelper";
-import {CreateCategoryRequest, FillCategoryFormRequest} from "../../APIRequest/CategoryAPIRequest";
-import {OnChangeCategoryInput} from "../../redux/state-slice/category-slice";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { ErrorToast, IsEmpty, SuccessToast } from "../../helper/FormHelper";
+import { CreateCategoryRequest, FillCategoryFormRequest } from "../../APIRequest/CategoryAPIRequest";
+import { OnChangeCategoryInput } from "../../redux/state-slice/category-slice";
 
 const CategoryCreateUpdate = () => {
+    const FormValue = useSelector((state) => state.category.FormValue);
+    const navigate = useNavigate();
+    const [ObjectID, SetObjectID] = useState(0);
+    const [loading, setLoading] = useState(false);
 
-
-    let FormValue=useSelector((state)=>(state.category.FormValue));
-    let navigate=useNavigate();
-    let [ObjectID,SetObjectID]=useState(0);
-
-    useEffect(()=>{
-        let params= new URLSearchParams(window.location.search);
-        let id=params.get('id');
-        if(id!==null){
-            SetObjectID(id);
-            (async () => {
+    useEffect(() => {
+        const fetchCategory = async () => {
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (id) {
+                SetObjectID(id);
                 await FillCategoryFormRequest(id);
-            })();
-        }
-    },[])
+            }
+        };
+        fetchCategory();
+    }, []);
 
+    const handleInputChange = (name, value) => {
+        store.dispatch(OnChangeCategoryInput({ Name: name, Value: value }));
+    };
 
     const SaveChange = async () => {
-        if(IsEmpty(FormValue.Name)){
-            ErrorToast("Category Name Required !")
+        if (IsEmpty(FormValue.Name)) {
+            ErrorToast("Category Name Required !");
+            return;
         }
-        else {
-            if(await CreateCategoryRequest(FormValue,ObjectID)){
-                navigate("/CategoryListPage")
-            }
+
+        setLoading(true);
+        const success = await CreateCategoryRequest(FormValue, ObjectID);
+        setLoading(false);
+
+        console.log("CreateCategoryRequest success:", success); // debug
+
+        if (success) {
+            SuccessToast("Category saved successfully!");
+            navigate("/CategoryListPage");
         }
-    }
-
-
-
+    };
 
     return (
         <div className="container-fluid">
@@ -45,17 +51,30 @@ const CategoryCreateUpdate = () => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card-body">
+                            <h5>{ObjectID ? "Update Category" : "Create Category"}</h5>
+                            <hr className="bg-light" />
                             <div className="row">
-                                <h5 >Save Category</h5>
-                                <hr className="bg-light"/>
                                 <div className="col-4 p-2">
                                     <label className="form-label">Category Name</label>
-                                    <input onChange={(e)=>{store.dispatch(OnChangeCategoryInput({Name:"Name",Value:e.target.value}))}} value={FormValue.Name} className="form-control form-control-sm" type="text"/>
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        value={FormValue.Name}
+                                        onChange={(e) => handleInputChange("Name", e.target.value)}
+                                        disabled={loading}
+                                    />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="col-4 p-2">
-                                    <button onClick={SaveChange} className="btn btn-sm my-3 btn-success">Save Change</button>
+                                    <button
+                                        type="button"
+                                        onClick={SaveChange}
+                                        className="btn btn-sm my-3 btn-success"
+                                        disabled={loading}
+                                    >
+                                        {loading ? "Saving..." : "Save Change"}
+                                    </button>
                                 </div>
                             </div>
                         </div>

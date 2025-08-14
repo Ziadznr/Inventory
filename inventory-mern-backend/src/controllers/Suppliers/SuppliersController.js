@@ -39,7 +39,7 @@ exports.SupplierDetailsByID=async(req,res)=>{
 exports.DeleteSupplier = async (req, res) => {
   let DeleteID = req.params.id;
   let ObjectId=mongoose.Types.ObjectId;
-  let CheckAssociate = await CheckAssociationService({SupplierID: ObjectId(DeleteID)}, PurchasesModel);
+  let CheckAssociate = await CheckAssociationService({SupplierID:new ObjectId(DeleteID)}, PurchasesModel);
   if (CheckAssociate) {
     return res.status(400).json({ message: "This Brand is associated with Products, cannot be deleted." });
   }else {

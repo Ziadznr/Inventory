@@ -5,7 +5,7 @@ const DeleteService=async(Request, Model) => {
 
         let QueryObject={};
         QueryObject['_id'] = DeleteID;
-        QueryObject[UserEmail] = UserEmail;
+        QueryObject['UserEmail'] = UserEmail;
 
         let Delete = await Model.deleteOne(QueryObject);
 

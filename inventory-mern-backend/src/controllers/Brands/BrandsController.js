@@ -21,9 +21,7 @@ exports.UpdateBrand = async (req, res) => {
 
 exports.BrandList = async (req, res) => {
   const SearchRgx={'$regex':req.params.searchKeyword, '$options':'i'};
-    const SearchArray = [
-        { Name: SearchRgx }
-    ];
+  const SearchArray = [{ Name: SearchRgx }];
   const Result = await ListService(req, DataModel, SearchArray);
   res.status(200).json(Result);
 }
@@ -40,13 +38,14 @@ exports.BrandDropDown = async (req, res) => {
 }
 
 exports.DeleteBrand = async (req, res) => {
-  let DeleteID = req.params.id;
-  let ObjectId=mongoose.Types.ObjectId;
-  let CheckAssociate = await CheckAssociationService({BrandID: ObjectId(DeleteID)}, ProductsModel);
+  const DeleteID = req.params.id;
+  const ObjectId = mongoose.Types.ObjectId;
+  const CheckAssociate = await CheckAssociationService({ BrandID: new ObjectId(DeleteID) }, ProductsModel);
+
   if (CheckAssociate) {
     return res.status(400).json({ message: "This Brand is associated with Products, cannot be deleted." });
-  }else {
+  } else {
     const Result = await DeleteService(req, DataModel);
     res.status(200).json(Result);
   }
-}
+};

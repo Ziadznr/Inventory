@@ -54,6 +54,25 @@ const MasterLayout = (props) => {
       url: '/',
       subMenu: [],
     },
+{
+  title: 'Department',
+  icon: <BsPeople className="side-bar-item-icon" />,
+  url: '/department-list',  // main list page
+  subMenu: [
+    {
+      title: 'Manage Departments',
+      icon: <BsCircle size={16} className="side-bar-subitem-icon" />,
+      url: '/department-list', // points to the list page as well
+    },
+    {
+      title: 'Add Department',
+      icon: <BsCircle size={16} className="side-bar-subitem-icon" />,
+      url: '/DepartmentCreatePage', // add create page link for better navigation
+    }
+  ],
+}
+,
+
     {
       title: 'Customer',
       icon: <BsPeople  className="side-bar-item-icon" />,
