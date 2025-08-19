@@ -9,6 +9,7 @@ const SalesProductsModel = require('../../models/Sales/SalesProductsModel');
 const PurchasesProductsModel = require('../../models/Purchases/PurchasesProductsModel');
 const mongoose = require('mongoose');
 const DetailsByIDService = require("../../services/common/DetailsByIDService");
+const DropDownService =require('../../services/common/DropDownService')
 
 exports.CreateProduct = async (req, res) => {
     let Result=await CreateService(req,DataModel)
@@ -56,4 +57,9 @@ exports.DeleteProduct = async (req, res) => {
     const Result = await DeleteService(req, DataModel);
     res.status(200).json(Result);
   }
+}
+
+exports.ProductsDropDown=async (req, res) => {
+    let Result= await DropDownService(req,DataModel,{_id:1,Name:1})
+    res.status(200).json(Result)
 }

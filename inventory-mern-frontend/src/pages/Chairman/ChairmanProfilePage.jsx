@@ -1,20 +1,19 @@
-import React, { Fragment, Suspense, lazy } from 'react';
+import React, { Fragment, lazy, Suspense } from 'react';
 import MasterLayout from "../../components/MasterLayout/MasterLayout";
 import LazyLoader from "../../components/MasterLayout/LazyLoader";
 
-const DepartmentList = lazy(() => import('../../components/Departments/DepartmentList'));
+const ChairmanProfile = lazy(() => import('../../components/Chairmans/ChairmanProfile'));
 
-const DepartmentListPage = () => {
+const ChairmanProfilePage = () => {
     return (
         <Fragment>
             <MasterLayout>
                 <Suspense fallback={<LazyLoader />}>
-                    
-                    <DepartmentList />
+                    <ChairmanProfile />
                 </Suspense>
             </MasterLayout>
         </Fragment>
     );
 };
 
-export default DepartmentListPage;
+export default ChairmanProfilePage;

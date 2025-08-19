@@ -1,174 +1,176 @@
-// src/components/DepartmentList.jsx
-import React, { useEffect, useState, Fragment } from 'react';
-import { DepartmentListRequest, DeleteDepartmentRequest } from "../../APIRequest/DepartmentAPIRequest";
+// src/components/Department/DepartmentList.jsx
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import ReactPaginate from "react-paginate";
+import { DepartmentListRequest, DeleteDepartmentRequest } from "../../APIRequest/DepartmentAPIRequest";
 import { Link } from "react-router-dom";
 import { AiOutlineDelete, AiOutlineEdit } from "react-icons/ai";
-import moment from 'moment';
+import ReactPaginate from "react-paginate";
+import moment from "moment";
 import { DeleteAlert } from "../../helper/DeleteAlert";
-import DepartmentForm from "./DepartmentForm"; // ✅ Your create form
 
 const DepartmentList = () => {
-    let [searchKeyword, setSearchKeyword] = useState("0");
-    let [perPage, setPerPage] = useState(20);
+  const [searchKeyword, setSearchKeyword] = useState("0");
+  const [perPage, setPerPage] = useState(20);
 
-    // ✅ Load departments
-    const loadDepartments = async (page = 1, size = perPage, keyword = searchKeyword) => {
-        await DepartmentListRequest(page, size, keyword);
+  const DataList = useSelector((state) => state.department.List);
+  const Total = useSelector((state) => state.department.ListTotal);
+
+  // Initial fetch
+  useEffect(() => {
+    const fetchData = async () => {
+      await DepartmentListRequest(1, perPage, searchKeyword || "0");
     };
+    fetchData();
+  }, []);
 
-    useEffect(() => {
-        (async () => {
-            await loadDepartments();
-        })();
-    }, []);
+  // Pagination
+  const handlePageClick = async (event) => {
+    await DepartmentListRequest(event.selected + 1, perPage, searchKeyword || "0");
+  };
 
-    let DataList = useSelector((state) => (state.department.List));
-    let Total = useSelector((state) => (state.department.ListTotal));
+  // Search button
+  const searchData = async () => {
+    await DepartmentListRequest(1, perPage, searchKeyword || "0");
+  };
 
-    const handlePageClick = async (event) => {
-        await loadDepartments(event.selected + 1);
-    };
+  // Per-page selection
+  const perPageOnChange = async (e) => {
+    const newPerPage = parseInt(e.target.value);
+    setPerPage(newPerPage);
+    await DepartmentListRequest(1, newPerPage, searchKeyword || "0");
+  };
 
-    const searchData = async () => {
-        await loadDepartments(1);
-    };
+  // Search input
+  const searchKeywordOnChange = (e) => {
+    const value = e.target.value;
+    setSearchKeyword(value === "" ? "0" : value);
+  };
 
-    const perPageOnChange = async (e) => {
-        setPerPage(parseInt(e.target.value));
-        await loadDepartments(1, e.target.value);
-    };
+  // Delete department
+  const DeleteItem = async (id) => {
+    const Result = await DeleteAlert();
+    if (Result.isConfirmed) {
+      const DeleteResult = await DeleteDepartmentRequest(id);
+      if (DeleteResult) {
+        await DepartmentListRequest(1, perPage, searchKeyword || "0");
+      }
+    }
+  };
 
-    const searchKeywordOnChange = async (e) => {
-        setSearchKeyword(e.target.value);
-        if ((e.target.value).length === 0) {
-            setSearchKeyword("0");
-            await loadDepartments(1, perPage, "0");
-        }
-    };
-
-    const TextSearch = (e) => {
-        const rows = document.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            row.style.display = (row.innerText.includes(e.target.value)) ? '' : 'none';
-        });
-    };
-
-    const DeleteItem = async (id) => {
-        let Result = await DeleteAlert();
-        if (Result.isConfirmed) {
-            let DeleteResult = await DeleteDepartmentRequest(id);
-            if (DeleteResult) {
-                await loadDepartments();
-            }
-        }
-    };
-
-    return (
-        <Fragment>
-            <div className="container-fluid my-5">
-                <div className="row">
-                    <div className="col-12">
-                        <div className="card">
-                            <div className="card-body">
-                                <div className="container-fluid">
-
-                                    {/* ✅ Create Department Form */}
-                                    <DepartmentForm onSuccess={loadDepartments} />
-
-                                    <div className="row mt-3">
-                                        <div className="col-4">
-                                            <h5>Department List</h5>
-                                        </div>
-                                        <div className="col-2">
-                                            <input onKeyUp={TextSearch} placeholder="Text Filter" className="form-control form-control-sm" />
-                                        </div>
-                                        <div className="col-2">
-                                            <select onChange={perPageOnChange} className="form-control mx-2 form-select-sm form-select form-control-sm">
-                                                <option value="20">20 Per Page</option>
-                                                <option value="30">30 Per Page</option>
-                                                <option value="50">50 Per Page</option>
-                                                <option value="100">100 Per Page</option>
-                                                <option value="200">200 Per Page</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-4">
-                                            <div className="input-group mb-3">
-                                                <input onChange={searchKeywordOnChange} type="text" className="form-control form-control-sm" placeholder="Search.." />
-                                                <button onClick={searchData} className="btn btn-success btn-sm mb-0" type="button">Search</button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Table */}
-                                    <div className="row">
-                                        <div className="col-12">
-                                            <div className="table-responsive table-section">
-                                                <table className="table ">
-                                                    <thead className="sticky-top bg-white">
-                                                        <tr>
-                                                            <td>#No</td>
-                                                            <td>Department Name</td>
-                                                            <td>Created</td>
-                                                            <td>Action</td>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {DataList.map((item, i) =>
-                                                            <tr key={item._id}>
-                                                                <td>{i + 1}</td>
-                                                                <td>{item.Name}</td>
-                                                                <td>{moment(item.CreatedDate).format('MMMM Do YYYY')}</td>
-                                                                <td>
-                                                                    <Link to={`/DepartmentCreatePage?id=${item._id}`} className="btn text-info btn-outline-light p-2 mb-0 btn-sm">
-                                                                        <AiOutlineEdit size={15} />
-                                                                    </Link>
-                                                                    <button onClick={DeleteItem.bind(this, item._id)} className="btn btn-outline-light text-danger p-2 mb-0 btn-sm ms-2">
-                                                                        <AiOutlineDelete size={15} />
-                                                                    </button>
-                                                                </td>
-                                                            </tr>
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-
-                                        {/* Pagination */}
-                                        <div className="col-12 mt-5">
-                                            <nav>
-                                                <ReactPaginate
-                                                    previousLabel="<"
-                                                    nextLabel=">"
-                                                    pageClassName="page-item"
-                                                    pageLinkClassName="page-link"
-                                                    previousClassName="page-item"
-                                                    previousLinkClassName="page-link"
-                                                    nextClassName="page-item"
-                                                    nextLinkClassName="page-link"
-                                                    breakLabel="..."
-                                                    breakClassName="page-item"
-                                                    breakLinkClassName="page-link"
-                                                    pageCount={Math.ceil(Total / perPage)}
-                                                    marginPagesDisplayed={2}
-                                                    pageRangeDisplayed={5}
-                                                    onPageChange={handlePageClick}
-                                                    containerClassName="pagination"
-                                                    activeClassName="active"
-                                                />
-                                            </nav>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  return (
+    <div className="container-fluid my-5">
+      <div className="row">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-body">
+              <div className="row mb-3">
+                <div className="col-4">
+                  <h5>Department List</h5>
                 </div>
+
+                <div className="col-2">
+                  <input
+                    value={searchKeyword === "0" ? "" : searchKeyword}
+                    onChange={searchKeywordOnChange}
+                    placeholder="Search by name"
+                    className="form-control form-control-sm"
+                  />
+                </div>
+
+                <div className="col-2">
+                  <select
+                    value={perPage}
+                    onChange={perPageOnChange}
+                    className="form-select form-select-sm form-control-sm"
+                  >
+                    <option value="20">20 Per Page</option>
+                    <option value="30">30 Per Page</option>
+                    <option value="50">50 Per Page</option>
+                    <option value="100">100 Per Page</option>
+                    <option value="200">200 Per Page</option>
+                  </select>
+                </div>
+
+                <div className="col-4">
+                  <button onClick={searchData} className="btn btn-success btn-sm">
+                    Search
+                  </button>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="table-responsive table-section">
+                <table className="table">
+                  <thead className="sticky-top bg-white">
+                    <tr>
+                      <td>No</td>
+                      <td>Department Name</td>
+                      <td>Created</td>
+                      <td>Action</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DataList.length > 0 ? (
+                      DataList.map((item, i) => (
+                        <tr key={item._id}>
+                          <td>{i + 1}</td>
+                          <td>{item.Name}</td>
+                          <td>{moment(item.CreatedDate).format("MMMM Do YYYY")}</td>
+                          <td>
+                            <Link
+                              to={`/DepartmentCreatePage?id=${item._id}`}
+                              className="btn text-info btn-outline-light p-2 mb-0 btn-sm"
+                            >
+                              <AiOutlineEdit size={15} />
+                            </Link>
+                            <button
+                              onClick={() => DeleteItem(item._id)}
+                              className="btn btn-outline-light text-danger p-2 mb-0 btn-sm ms-2"
+                            >
+                              <AiOutlineDelete size={15} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="text-center">
+                          No Data Found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="mt-4">
+                <ReactPaginate
+                  previousLabel="<"
+                  nextLabel=">"
+                  pageClassName="page-item"
+                  pageLinkClassName="page-link"
+                  previousClassName="page-item"
+                  previousLinkClassName="page-link"
+                  nextClassName="page-item"
+                  nextLinkClassName="page-link"
+                  breakLabel="..."
+                  breakClassName="page-item"
+                  breakLinkClassName="page-link"
+                  pageCount={Math.ceil(Total / perPage)}
+                  marginPagesDisplayed={2}
+                  pageRangeDisplayed={5}
+                  onPageChange={handlePageClick}
+                  containerClassName="pagination"
+                  activeClassName="active"
+                />
+              </div>
             </div>
-        </Fragment>
-    );
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default DepartmentList;

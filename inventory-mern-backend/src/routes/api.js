@@ -1,6 +1,7 @@
 const express=require('express')
 const AuthVerifyMiddleware=require('../middlewares/AuthVerifyMiddleware.js')
 const UsersController=require('../controllers/Users/UsersController')
+const ChairmansController=require('../controllers/Chairmans/ChairmansController.js')
 const BrandsController=require('../controllers/Brands/BrandsController.js')
 const CategoriesController=require('../controllers/Categories/CategoriesController.js')
 const CustomersController=require('../controllers/Customers/CustomersController.js')    
@@ -24,6 +25,16 @@ router.get("/ProfileDetails",AuthVerifyMiddleware,UsersController.ProfileDetails
 router.get("/RecoverVerifyEmail/:email",UsersController.RecoverVerifyEmail)
 router.get("/RecoverVerifyOTP/:email/:otp",UsersController.RecoverVerifyOTP)
 router.post("/RecoverResetPass",UsersController.RecoverResetPass)
+
+// Chairmans Profile
+router.post("/ChairmanRegistration",ChairmansController.ChairmanRegistration)
+router.post("/ChairmanLogin",ChairmansController.ChairmanLogin)
+router.post("/ChairmanProfileUpdate",AuthVerifyMiddleware,ChairmansController.ChairmanProfileUpdate)
+router.get("/ChairmanProfileDetails",AuthVerifyMiddleware,ChairmansController.ChairmanProfileDetails)
+router.get("/ChairmanRecoverVerifyEmail/:email",ChairmansController.ChairmanRecoverVerifyEmail)
+router.get("/ChairmanRecoverVerifyOTP/:email/:otp",ChairmansController.ChairmanRecoverVerifyOTP)
+router.post("/ChairmanRecoverResetPass",ChairmansController.ChairmanRecoverResetPass)
+router.get("/PublicDepartments", ChairmansController.PublicDepartments);
 
 
 // Brands
@@ -88,6 +99,7 @@ router.post("/UpdateProduct/:id",AuthVerifyMiddleware,ProductsController.UpdateP
 router.get("/ProductsList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,ProductsController.ProductsList)
 router.get("/DeleteProduct/:id",AuthVerifyMiddleware,ProductsController.DeleteProduct)
 router.get("/ProductDetailsByID/:id",AuthVerifyMiddleware,ProductsController.ProductDetailsByID)
+router.get("/ProductsDropDown",AuthVerifyMiddleware,ProductsController.ProductsDropDown);
 
 // Purchases
 router.post("/CreatePurchases",AuthVerifyMiddleware,PurchasesController.CreatePurchases)

@@ -1,48 +1,56 @@
-import {createSlice} from "@reduxjs/toolkit";
-export const purchaseSlice=createSlice({
-    name:'purchase',
-    initialState:{
-        List:[],
-        ListTotal:0,
-        SupplierDropDown:[],
-        ProductDropDown:[],
-        PurchaseFormValue:{
-            SupplierID:"",
-            VatTax:"",
-            Discount:"",
-            OtherCost:"",
-            ShippingCost:"",
-            GrandTotal:"",
-            Note:"",
+import { createSlice } from "@reduxjs/toolkit";
+
+export const purchaseSlice = createSlice({
+    name: 'purchase',
+    initialState: {
+        List: [],
+        ListTotal: 0,
+        SupplierDropDown: [],
+        ProductDropDown: [],
+        PurchaseFormValue: {
+            SupplierID: "",
+            VatTax: "",
+            Discount: "",
+            OtherCost: "",
+            ShippingCost: "",
+            GrandTotal: "",
+            Note: "",
         },
-        PurchaseItemList:[],
+        PurchaseItemList: [],
     },
-    reducers:{
-        SetPurchaseList:(state,action)=>{
-            state.List=action.payload
+    reducers: {
+        SetPurchaseList: (state, action) => {
+            state.List = action.payload;
         },
-        SetPurchaseListTotal:(state,action)=>{
-            state.ListTotal=action.payload
+        SetPurchaseListTotal: (state, action) => {
+            state.ListTotal = action.payload;
         },
-        SetSupplierDropDown:(state,action)=>{
-            state.SupplierDropDown=action.payload
+        SetSupplierDropDown: (state, action) => {
+            state.SupplierDropDown = action.payload;
         },
-        SetProductDropDown:(state,action)=>{
-            state.ProductDropDown=action.payload
+        SetProductDropDown: (state, action) => {
+            state.ProductDropDown = action.payload;
         },
-        OnChangePurchaseInput:(state,action)=>{
-            state.PurchaseFormValue[`${action.payload.Name}`]=action.payload.Value;
+        OnChangePurchaseInput: (state, action) => {
+            state.PurchaseFormValue[action.payload.Name] = action.payload.Value;
         },
-        SetPurchaseItemList:(state,action)=>{
-            state.PurchaseItemList.push(action.payload)
+        // Update this reducer to safely append item to the cart
+        SetPurchaseItemList: (state, action) => {
+            // If action.payload is an array, replace entire cart (used in OnAddCart)
+            if (Array.isArray(action.payload)) {
+                state.PurchaseItemList = action.payload;
+            } else {
+                // Else, just append single item
+                state.PurchaseItemList.push(action.payload);
+            }
         },
-        RemovePurchaseItem:(state,action)=>{
-            state.PurchaseItemList.splice(action.payload,1)
+        RemovePurchaseItem: (state, action) => {
+            state.PurchaseItemList.splice(action.payload, 1);
         },
     }
-})
+});
 
-export  const {
+export const {
     SetPurchaseList,
     SetPurchaseListTotal,
     SetSupplierDropDown,
@@ -50,5 +58,6 @@ export  const {
     OnChangePurchaseInput,
     SetPurchaseItemList,
     RemovePurchaseItem
-}=purchaseSlice.actions;
-export default  purchaseSlice.reducer;
+} = purchaseSlice.actions;
+
+export default purchaseSlice.reducer;
