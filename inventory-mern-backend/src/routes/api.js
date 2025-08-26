@@ -13,7 +13,8 @@ const PurchasesController=require('../controllers/Purchases/PurchasesController.
 const SalesController=require('../controllers/Sales/SalesController.js')
 const ReturnsController=require('../controllers/Returns/ReturnsController.js') 
 const DepartmentController = require('../controllers/Departments/DepartmentController');
-
+const FacultyController = require('../controllers/Faculties/FacultyController');
+const SectionController = require('../controllers/Sections/SectionController');
 
 const router=express.Router();
 
@@ -53,10 +54,27 @@ router.get("/CategoriesDropDown",AuthVerifyMiddleware,CategoriesController.Categ
 router.get("/DeleteCategories/:id",AuthVerifyMiddleware,CategoriesController.DeleteCategories)
 router.get("/CategoriesDetailsByID/:id",AuthVerifyMiddleware,CategoriesController.CategoriesDetailsByID)
 
+// Faculties
+router.post('/CreateFaculty', AuthVerifyMiddleware,FacultyController.CreateFaculty);
+router.get('/FacultyList/:pageNo/:perPage/:searchKeyword', AuthVerifyMiddleware,FacultyController.ListFaculties);
+router.delete('/DeleteFaculty/:id', AuthVerifyMiddleware,FacultyController.DeleteFaculty);
+router.get('/FacultyDropdown', AuthVerifyMiddleware,FacultyController.FacultyDropdown);
+
+
 // Departments
-router.post('/CreateDepartment', DepartmentController.CreateDepartment);
-router.get('/DepartmentList/:pageNo/:perPage/:searchKeyword', DepartmentController.ListDepartments);
-router.delete('/delete/:id', DepartmentController.DeleteDepartment);
+router.post('/CreateDepartment', AuthVerifyMiddleware,DepartmentController.CreateDepartment);
+router.post('/UpdateDepartment/:id', AuthVerifyMiddleware,DepartmentController.UpdateDepartment);
+router.get('/DepartmentList/:pageNo/:perPage/:searchKeyword', AuthVerifyMiddleware,DepartmentController.ListDepartments);
+router.get('/DepartmentDetailsByID/:id', AuthVerifyMiddleware,DepartmentController.DepartmentDetailsByID);
+router.delete('/DeleteDepartment/:id', AuthVerifyMiddleware,DepartmentController.DeleteDepartment);
+router.get('/DepartmentDropdown', AuthVerifyMiddleware,DepartmentController.DepartmentDropdown);
+
+
+// Sections
+router.post('/CreateSection', AuthVerifyMiddleware,SectionController.CreateSection);
+router.get('/SectionList/:pageNo/:perPage/:searchKeyword', AuthVerifyMiddleware,SectionController.ListSections);
+router.delete('/DeleteSection/:id', AuthVerifyMiddleware,SectionController.DeleteSection);
+router.get('/SectionDropdown', AuthVerifyMiddleware,SectionController.SectionDropdown);
 
 
 // Customers

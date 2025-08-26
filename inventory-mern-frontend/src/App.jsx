@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { getToken } from "./helper/SessionHelper";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import FullscreenLoader from "./components/MasterLayout/FullscreenLoader";
+import FullscreenLoader from "./components/MasterLayout/FullscreenLoader.jsx";
 import NotFoundPage from "./pages/NotFound/NotFoundPage";
 
 // ------------------ Landing Page ------------------
@@ -51,6 +51,8 @@ import SupplierCreateUpdatePage from "./pages/Supplier/SupplierCreateUpdatePage"
 import SupplierListPage from "./pages/Supplier/SupplierListPage";
 import DepartmentListPage from "./pages/Department/DepartmentListPage";
 import DepartmentCreateUpdatePage from "./pages/Department/DepartmentCreateUpdatePage";
+import FacultyOperationPage from './pages/Faculty/FacultyOperationPage';
+import SectionOperationPage from './pages/Section/SectionOperationPage.jsx';
 
 const App = () => {
   const token = getToken();
@@ -72,6 +74,12 @@ const App = () => {
               {/* Category */}
               <Route path="/CategoryCreateUpdatePage" element={<CategoryCreateUpdatePage />} />
               <Route path="/CategoryListPage" element={<CategoryListPage />} />
+
+              {/* Section */}
+              <Route path="/SectionOperationPage" element={<SectionOperationPage />} />
+
+              {/* Faculty */}
+              <Route path="/FacultyOperationPage" element={<FacultyOperationPage />} />
 
               {/* Department */}
               <Route path="/department-list" element={<DepartmentListPage />} />

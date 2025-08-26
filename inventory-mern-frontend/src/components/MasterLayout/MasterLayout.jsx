@@ -72,6 +72,32 @@ const MasterLayout = (props) => {
   ],
 }
 ,
+{
+  title: 'Faculty',
+  icon: <BsPeople className="side-bar-item-icon" />,
+  url: '/FacultyOperationPage',  // main list page
+  subMenu: [
+    {
+      title: 'Faculty List',
+      icon: <BsCircle size={16} className="side-bar-subitem-icon" />,
+      url: '/FacultyOperationPage', // points to the list page as well
+    }
+  ],
+}
+,
+{
+  title: 'Section',
+  icon: <BsPeople className="side-bar-item-icon" />,
+  url: '/SectionOperationPage',  // main list page
+  subMenu: [
+    {
+      title: 'Section List',
+      icon: <BsCircle size={16} className="side-bar-subitem-icon" />,
+      url: '/SectionOperationPage', // points to the list page as well
+    }
+  ],
+}
+,
 
     {
       title: 'Customer',

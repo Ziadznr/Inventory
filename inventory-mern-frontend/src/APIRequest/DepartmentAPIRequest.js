@@ -1,4 +1,3 @@
-// src/APIRequest/DepartmentAPIRequest.js
 import store from "../redux/store/store";
 import { HideLoader, ShowLoader } from "../redux/state-slice/settings-slice";
 import axios from "axios";
@@ -8,8 +7,9 @@ import {
   SetDepartmentList,
   SetDepartmentListTotal,
   ResetDepartmentFormValue,
-  OnChangeDepartmentInput
+  OnChangeDepartmentInput,
 } from "../redux/state-slice/department-slice";
+import { SetFacultyDropDown } from "../redux/state-slice/faculty-slice";
 import { BaseURL } from "../helper/config";
 
 const AxiosHeader = { headers: { token: getToken() } };
@@ -22,30 +22,38 @@ export async function DepartmentListRequest(pageNo, perPage, searchKeyword) {
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
 
-    console.log("DepartmentListRequest response:", result.data); // debug
+    console.log("DepartmentList API result:", result.data);
 
-    if (result.status === 200 && result.data?.success === "success") {
-      const rows = result.data?.data[0]?.Rows || [];
-      const total = result.data?.data[0]?.Total[0]?.count || 0;
+    if (result.status === 200 && result.data.status === "success") {
+      let dataList = [];
 
-      store.dispatch(SetDepartmentList(rows));
-      store.dispatch(SetDepartmentListTotal(total));
+      // Nested Rows (old style)
+      if (result.data.data?.[0]?.Rows) {
+        dataList = result.data.data[0].Rows;
+        store.dispatch(SetDepartmentListTotal(result.data.data[0].Total?.[0]?.count || dataList.length));
+      } 
+      // Flat array (new style)
+      else if (Array.isArray(result.data.data)) {
+        dataList = result.data.data;
+        store.dispatch(SetDepartmentListTotal(result.data.total || dataList.length));
+      }
 
-      if (rows.length === 0) {
-        // Optional: show a toast for no data
-        // ErrorToast("No Data Found");
+      store.dispatch(SetDepartmentList(dataList));
+
+      if (dataList.length === 0 && searchKeyword !== "0") {
+        ErrorToast("No Data Found");
       }
     } else {
+      ErrorToast("Something Went Wrong");
       store.dispatch(SetDepartmentList([]));
       store.dispatch(SetDepartmentListTotal(0));
-      ErrorToast("Something Went Wrong");
     }
   } catch (e) {
     console.log("DepartmentListRequest error:", e);
+    ErrorToast("Something Went Wrong");
     store.dispatch(HideLoader());
     store.dispatch(SetDepartmentList([]));
     store.dispatch(SetDepartmentListTotal(0));
-    ErrorToast("Something Went Wrong");
   }
 }
 
@@ -54,33 +62,21 @@ export async function CreateDepartmentRequest(PostBody, ObjectID) {
   try {
     store.dispatch(ShowLoader());
     let URL = `${BaseURL}/CreateDepartment`;
-    if (ObjectID !== 0) {
-      URL = `${BaseURL}/UpdateDepartment/${ObjectID}`;
-    }
+    if (ObjectID !== 0) URL = `${BaseURL}/UpdateDepartment/${ObjectID}`;
 
     const result = await axios.post(URL, PostBody, AxiosHeader);
     store.dispatch(HideLoader());
 
-    console.log("CreateDepartmentRequest response:", result.data); // debug
+    console.log("CreateDepartmentRequest API response:", result.data);
 
-    if (result.status === 200 && result.data?.success === "success") {
+    if (result.status === 200 && (result.data.status === "success" || result.data.success === "success")) {
       SuccessToast("Request Successful");
       store.dispatch(ResetDepartmentFormValue());
       return true;
-    } 
-    else if (result.status === 200 && result.data?.success === "fail") {
-      if (result.data?.data?.keyPattern?.Name === 1) {
-        ErrorToast("Department Name Already Exist");
-        return false;
-      } else {
-        ErrorToast(result.data?.message || "Request Failed");
-        return false;
-      }
-    } 
-    else {
-      ErrorToast("Request Fail! Try Again");
-      return false;
     }
+
+    ErrorToast(result.data.message || "Request Fail! Try Again");
+    return false;
   } catch (e) {
     console.log("CreateDepartmentRequest error:", e);
     ErrorToast("Something Went Wrong");
@@ -91,52 +87,78 @@ export async function CreateDepartmentRequest(PostBody, ObjectID) {
 
 // ------------------ Fill Department Form ------------------
 export async function FillDepartmentFormRequest(ObjectID) {
-  store.dispatch(ShowLoader());
   try {
+    store.dispatch(ShowLoader());
     const URL = `${BaseURL}/DepartmentDetailsByID/${ObjectID}`;
     const result = await axios.get(URL, AxiosHeader);
+    store.dispatch(HideLoader());
 
-    if (result.status === 200 && result.data?.success === "success") {
-      const FormValue = result.data?.data?.[0];
+    console.log("FillDepartmentFormRequest API response:", result.data);
+
+    if (result.status === 200 && result.data.status === "success") {
+      const FormValue = result.data.data?.[0];
+      store.dispatch(OnChangeDepartmentInput({ Name: "FacultyID", Value: FormValue?.FacultyID || "" }));
       store.dispatch(OnChangeDepartmentInput({ Name: "Name", Value: FormValue?.Name || "" }));
       return true;
     } else {
-      ErrorToast("Request Failed! Try Again");
+      ErrorToast("Request Fail! Try Again");
       return false;
     }
   } catch (e) {
     console.log("FillDepartmentFormRequest error:", e);
     ErrorToast("Something Went Wrong");
+    store.dispatch(HideLoader());
     return false;
-  } finally {
+  }
+}
+
+// ------------------ Faculty DropDown ------------------
+export async function FacultyDropDownRequest() {
+  try {
+    store.dispatch(ShowLoader());
+    const URL = `${BaseURL}/FacultyDropdown`;
+    const result = await axios.get(URL, AxiosHeader);
+    store.dispatch(HideLoader());
+
+    console.log("FacultyDropDownRequest API response:", result.data);
+
+    if (result.status === 200 && result.data.status === "success") {
+      store.dispatch(SetFacultyDropDown(result.data.data || []));
+      if (!result.data.data?.length) ErrorToast("No Faculty Found");
+    } else {
+      ErrorToast("Something Went Wrong");
+    }
+  } catch (e) {
+    console.log("FacultyDropDownRequest error:", e);
+    ErrorToast("Something Went Wrong");
     store.dispatch(HideLoader());
   }
 }
 
 // ------------------ Delete Department ------------------
 export async function DeleteDepartmentRequest(ObjectID) {
-  store.dispatch(ShowLoader());
   try {
+    store.dispatch(ShowLoader());
     const URL = `${BaseURL}/DeleteDepartment/${ObjectID}`;
-    const result = await axios.get(URL, AxiosHeader);
+    const result = await axios.delete(URL, AxiosHeader);
+    store.dispatch(HideLoader());
 
-    if (result.status === 200 && result.data?.status === "associate") {
-      ErrorToast(result.data?.data || "Cannot delete associated department");
+    console.log("DeleteDepartmentRequest API response:", result.data);
+
+    if (result.status === 200 && result.data.status === "fail") {
+      ErrorToast(result.data.message || "This Department is associated, cannot delete");
       return false;
-    }
-
-    if (result.status === 200 && result.data?.status === "success") {
+    } else if (result.status === 200 && result.data.status === "success") {
       SuccessToast("Request Successful");
       return true;
     } else {
-      ErrorToast("Request Failed! Try Again");
+      ErrorToast("Request Fail! Try Again");
       return false;
     }
   } catch (e) {
     console.log("DeleteDepartmentRequest error:", e);
     ErrorToast("Something Went Wrong");
-    return false;
-  } finally {
     store.dispatch(HideLoader());
+    return false;
   }
 }

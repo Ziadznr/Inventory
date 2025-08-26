@@ -8,8 +8,7 @@ const DepartmentListPage = () => {
     return (
         <Fragment>
             <MasterLayout>
-                <Suspense fallback={<LazyLoader />}>
-                    
+                <Suspense fallback={<LazyLoader />}>    
                     <DepartmentList />
                 </Suspense>
             </MasterLayout>
