@@ -1,5 +1,4 @@
-// models/Departments/DepartmentModel.js
-// models/Departments/DepartmentModel.js
+
 const mongoose = require('mongoose');
 
 const DepartmentSchema = new mongoose.Schema({

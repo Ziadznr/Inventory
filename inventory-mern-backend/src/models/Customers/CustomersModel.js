@@ -1,11 +1,37 @@
 const mongoose = require('mongoose');
+
 const CustomersSchema = mongoose.Schema({
-    UserEmail: { type: String },
-    CustomerName: { type: String },
+    CustomerName: { type: String, required: true },
     Phone: { type: String, required: true },
-    Email: { type: String },
-    Address: { type: String  },
-    CreatedDate: { type: Date, default: Date.now() }
-},{versionKey: false });
+    UserEmail: { type: String },
+    Address: { type: String },
+
+    // Role of customer
+    Category: { 
+        type: String, 
+        enum: ["Dean", "Teacher", "Chairman", "Officer"], 
+        required: true 
+    },
+
+    // Relationships (depend on category)
+    Faculty: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "faculties", 
+        default: null 
+    },
+    Department: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "departments", 
+        default: null 
+    },
+    Section: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "sections", 
+        default: null 
+    },
+
+    CreatedDate: { type: Date, default: Date.now }
+}, { versionKey: false });
+
 const CustomersModel = mongoose.model('customers', CustomersSchema);
 module.exports = CustomersModel;

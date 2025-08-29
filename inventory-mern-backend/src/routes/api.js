@@ -67,7 +67,7 @@ router.post('/UpdateDepartment/:id', AuthVerifyMiddleware,DepartmentController.U
 router.get('/DepartmentList/:pageNo/:perPage/:searchKeyword', AuthVerifyMiddleware,DepartmentController.ListDepartments);
 router.get('/DepartmentDetailsByID/:id', AuthVerifyMiddleware,DepartmentController.DepartmentDetailsByID);
 router.delete('/DeleteDepartment/:id', AuthVerifyMiddleware,DepartmentController.DeleteDepartment);
-router.get('/DepartmentDropdown', AuthVerifyMiddleware,DepartmentController.DepartmentDropdown);
+router.get('/DepartmentDropdown/:facultyID?', AuthVerifyMiddleware, DepartmentController.DepartmentDropdown);
 
 
 // Sections
@@ -80,10 +80,10 @@ router.get('/SectionDropdown', AuthVerifyMiddleware,SectionController.SectionDro
 // Customers
 router.post("/CreateCustomers",AuthVerifyMiddleware,CustomersController.CreateCustomers)
 router.post("/UpdateCustomers/:id",AuthVerifyMiddleware,CustomersController.UpdateCustomers)
-router.get("/CustomersList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,CustomersController.CustomersList)
+router.get("/CustomersList/:pageNo/:perPage/:searchKeyword/:category",AuthVerifyMiddleware,CustomersController.CustomersList)
 router.get("/CustomersDropdown",AuthVerifyMiddleware,CustomersController.CustomersDropdown)
 router.get("/DeleteCustomer/:id",AuthVerifyMiddleware,CustomersController.DeleteCustomer)
-router.get("/CustomerDetailsByID/:id",AuthVerifyMiddleware,CustomersController.CustomerDetailsByID)
+router.get("/CustomerDetailsByID/:id",AuthVerifyMiddleware,CustomersController.CustomersDetailsByID)
 
 
 // Suppliers
@@ -108,7 +108,7 @@ router.post("/UpdateExpense/:id",AuthVerifyMiddleware,ExpensesController.UpdateE
 router.get("/ExpensesList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,ExpensesController.ExpensesList)
 router.get("/DeleteExpenses/:id",AuthVerifyMiddleware,ExpensesController.DeleteExpenses)
 router.post("/ExpenseByDate",AuthVerifyMiddleware,ExpensesController.ExpenseByDate)
-router.get("/ExpensesSummery",AuthVerifyMiddleware,ExpensesController.ExpensesSummery)
+router.get("/ExpensesSummary",AuthVerifyMiddleware,ExpensesController.ExpensesSummery)
 router.get("/ExpensesDetailsByID/:id",AuthVerifyMiddleware,ExpensesController.ExpensesDetailsByID)
 
 // Products
@@ -124,20 +124,20 @@ router.post("/CreatePurchases",AuthVerifyMiddleware,PurchasesController.CreatePu
 router.get("/PurchasesList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,PurchasesController.PurchasesList)
 router.get("/PurchasesDelete/:id",AuthVerifyMiddleware,PurchasesController.PurchasesDelete)
 router.post("/PurchasesByDate",AuthVerifyMiddleware,PurchasesController.PurchasesByDate)
-router.get("/PurchaseSummery",AuthVerifyMiddleware,PurchasesController.PurchaseSummery)
+router.get("/PurchaseSummary",AuthVerifyMiddleware,PurchasesController.PurchaseSummery)
 
 // Sales
 router.post("/CreateSales",AuthVerifyMiddleware,SalesController.CreateSales)
 router.get("/SalesList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,SalesController.SalesList)
 router.get("/SalesDelete/:id",AuthVerifyMiddleware,SalesController.SalesDelete)
 router.post("/SalesByDate",AuthVerifyMiddleware,SalesController.SalesByDate)
-router.get("/SalesSummery",AuthVerifyMiddleware,SalesController.SaleSummery)
+router.get("/SalesSummary",AuthVerifyMiddleware,SalesController.SaleSummery)
 
 // Returns  
 router.post("/CreateReturns",AuthVerifyMiddleware,ReturnsController.CreateReturns)
 router.get("/ReturnsList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,ReturnsController.ReturnsList)
 router.get("/ReturnsDelete/:id",AuthVerifyMiddleware,ReturnsController.ReturnsDelete)
 router.post("/ReturnByDate",AuthVerifyMiddleware,ReturnsController.ReturnByDate)
-router.get("/ReturnSummery",AuthVerifyMiddleware,ReturnsController.ReturnSummery)
+router.get("/ReturnSummary",AuthVerifyMiddleware,ReturnsController.ReturnSummery)
 
 module.exports=router;

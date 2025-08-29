@@ -19,11 +19,9 @@ const AxiosHeader = { headers: { token: getToken() } };
 export async function ProductListRequest(pageNo, perPage, searchKeyword) {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/ProductsList/${pageNo}/${perPage}/${searchKeyword}`;
+    const URL = `${BaseURL}/ProductsList/${pageNo}/${perPage}/${searchKeyword}`;
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
-
-    console.log("ProductList API result:", result.data);
 
     if (result.status === 200 && result.data.status === "success") {
       const data = result.data.data?.[0];
@@ -50,20 +48,19 @@ export async function CreateProductRequest(PostBody, ObjectID) {
   try {
     store.dispatch(ShowLoader());
     let URL = `${BaseURL}/CreateProduct`;
-    if (ObjectID !== 0) {
-      URL = `${BaseURL}/UpdateProduct/${ObjectID}`;
-    }
+    if (ObjectID !== 0) URL = `${BaseURL}/UpdateProduct/${ObjectID}`;
 
     const result = await axios.post(URL, PostBody, AxiosHeader);
     store.dispatch(HideLoader());
 
-    console.log("CreateProductRequest API response:", result.data);
-
-    if (result.status === 200 && (result.data['status'] === "success" || result.data['success'] === "success")) {
-    SuccessToast("Request Successful");
-    store.dispatch(ResetProductFormValue());
-    return true;
-}
+    if (
+      result.status === 200 &&
+      (result.data.status === "success" || result.data.success === "success")
+    ) {
+      SuccessToast("Request Successful");
+      store.dispatch(ResetProductFormValue());
+      return true;
+    }
 
     ErrorToast("Request Fail! Try Again");
     return false;
@@ -79,17 +76,21 @@ export async function CreateProductRequest(PostBody, ObjectID) {
 export async function FillProductFormRequest(ObjectID) {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/ProductsDetailsByID/${ObjectID}`;
+    const URL = `${BaseURL}/ProductsDetailsByID/${ObjectID}`;
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
 
     if (result.status === 200 && result.data.status === "success") {
-      let FormValue = result.data.data?.[0];
-      store.dispatch(OnChangeProductInput({ Name: "CategoryID", Value: FormValue?.CategoryID || "" }));
-      store.dispatch(OnChangeProductInput({ Name: "BrandID", Value: FormValue?.BrandID || "" }));
+      const FormValue = result.data.data?.[0];
+      store.dispatch(
+        OnChangeProductInput({ Name: "CategoryID", Value: FormValue?.CategoryID || "" })
+      );
+      store.dispatch(
+        OnChangeProductInput({ Name: "BrandID", Value: FormValue?.BrandID || "" })
+      );
       store.dispatch(OnChangeProductInput({ Name: "Name", Value: FormValue?.Name || "" }));
-      store.dispatch(OnChangeProductInput({ Name: "Unit", Value: FormValue?.Unit || "" }));
       store.dispatch(OnChangeProductInput({ Name: "Details", Value: FormValue?.Details || "" }));
+      // Stock is NOT updated here, handled in Purchases
       return true;
     } else {
       ErrorToast("Request Fail! Try Again");
@@ -107,19 +108,15 @@ export async function FillProductFormRequest(ObjectID) {
 export async function ProductCategoryDropDownRequest() {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/CategoriesDropDown`;
+    const URL = `${BaseURL}/CategoriesDropDown`;
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
 
     if (result.status === 200 && result.data.status === "success") {
-      if (result.data.data.length > 0) {
-        store.dispatch(SetProductCategoryDropDown(result.data.data));
-      } else {
-        store.dispatch(SetProductCategoryDropDown([]));
-        ErrorToast("No Product Category Found");
-      }
+      store.dispatch(SetProductCategoryDropDown(result.data.data || []));
     } else {
-      ErrorToast("Something Went Wrong");
+      store.dispatch(SetProductCategoryDropDown([]));
+      ErrorToast("No Product Category Found");
     }
   } catch (e) {
     console.log("ProductCategoryDropDownRequest error:", e);
@@ -132,19 +129,15 @@ export async function ProductCategoryDropDownRequest() {
 export async function ProductBrandDropDownRequest() {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/BrandDropDown`;
+    const URL = `${BaseURL}/BrandDropDown`;
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
 
     if (result.status === 200 && result.data.status === "success") {
-      if (result.data.data.length > 0) {
-        store.dispatch(SetProductBrandDropDown(result.data.data));
-      } else {
-        store.dispatch(SetProductBrandDropDown([]));
-        ErrorToast("No Product Brand Found");
-      }
+      store.dispatch(SetProductBrandDropDown(result.data.data || []));
     } else {
-      ErrorToast("Something Went Wrong");
+      store.dispatch(SetProductBrandDropDown([]));
+      ErrorToast("No Product Brand Found");
     }
   } catch (e) {
     console.log("ProductBrandDropDownRequest error:", e);
@@ -157,8 +150,8 @@ export async function ProductBrandDropDownRequest() {
 export async function DeleteProductRequest(ObjectID) {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/DeleteProduct/${ObjectID}`;
-    const result = await axios.get(URL, AxiosHeader); // ✅ use DELETE
+    const URL = `${BaseURL}/DeleteProduct/${ObjectID}`;
+    const result = await axios.get(URL, AxiosHeader); // ✅ updated to delete
     store.dispatch(HideLoader());
 
     if (result.status === 200 && result.data.status === "associate") {

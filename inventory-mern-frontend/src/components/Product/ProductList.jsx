@@ -1,11 +1,10 @@
 import React, {Fragment, useEffect, useState} from 'react';
-import {DeleteProductRequest, ProductListRequest} from "../../APIRequest/ProductAPIRequest";
+import {ProductListRequest, DeleteProductRequest} from "../../APIRequest/ProductAPIRequest";
 import {useSelector} from "react-redux";
 import {Link} from "react-router-dom";
 import {AiOutlineDelete, AiOutlineEdit} from "react-icons/ai";
 import {DeleteAlert} from "../../helper/DeleteAlert";
 import ReactPaginate from "react-paginate";
-
 
 const ProductList = () => {
     let [searchKeyword,setSearchKeyword]=useState("0");
@@ -13,30 +12,25 @@ const ProductList = () => {
 
     useEffect(()=>{
         (async () => {
-            await ProductListRequest(1,perPage,searchKeyword);
+            await ProductListRequest(1, perPage, searchKeyword);
         })();
-    },[])
+    }, [])
 
     let DataList=useSelector((state)=>(state.product.List));
-    let Total=useSelector((state)=>(state.product.ListTotal))
-
-
+    let Total=useSelector((state)=>(state.product.ListTotal));
 
     const handlePageClick = async (event) => {
         await ProductListRequest(event.selected + 1, perPage, searchKeyword)
     };
 
-
     const searchData=async () => {
         await ProductListRequest(1, perPage, searchKeyword)
     }
-
 
     const perPageOnChange=async (e) => {
         setPerPage(parseInt(e.target.value))
         await ProductListRequest(1, e.target.value, searchKeyword)
     }
-
 
     const searchKeywordOnChange=async (e) => {
         setSearchKeyword(e.target.value)
@@ -58,11 +52,10 @@ const ProductList = () => {
         if(Result.isConfirmed){
             let DeleteResult= await DeleteProductRequest(id)
             if(DeleteResult){
-                await ProductListRequest(1,perPage,searchKeyword);
+                await ProductListRequest(1, perPage, searchKeyword);
             }
         }
     }
-
 
     return (
         <Fragment>
@@ -72,72 +65,71 @@ const ProductList = () => {
                         <div className="card">
                             <div className="card-body">
                                 <div className="container-fluid">
-                                    <div className="row">
+                                    <div className="row mb-3">
                                         <div className="col-4">
-                                            <h5> Product List</h5>
+                                            <h5>Product List</h5>
                                         </div>
-
                                         <div className="col-2">
                                             <input onKeyUp={TextSearch} placeholder="Text Filter" className="form-control form-control-sm"/>
                                         </div>
-
                                         <div className="col-2">
-                                            <select onChange={perPageOnChange} className="form-control mx-2 form-select-sm form-select form-control-sm" >
+                                            <select onChange={perPageOnChange} className="form-control mx-2 form-select-sm form-control-sm">
                                                 <option value="20">20 Per Page</option>
                                                 <option value="30">30 Per Page</option>
                                                 <option value="50">50 Per Page</option>
                                                 <option value="100">100 Per Page</option>
-                                                <option value="100">200 Per Page</option>
+                                                <option value="200">200 Per Page</option>
                                             </select>
                                         </div>
                                         <div className="col-4">
                                             <div className="input-group mb-3">
-                                                <input onChange={searchKeywordOnChange} type="text" className="form-control form-control-sm" placeholder="Search.." aria-label="Recipient's username" aria-describedby="button-addon2"/>
-                                                <button onClick={searchData} className="btn  btn-success btn-sm mb-0" type="button">Search</button>
+                                                <input onChange={searchKeywordOnChange} type="text" className="form-control form-control-sm" placeholder="Search.."/>
+                                                <button onClick={searchData} className="btn btn-success btn-sm mb-0" type="button">Search</button>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div className="row">
-                                        <div className="col-12">
-                                            <div className="table-responsive table-section">
-                                                <table className="table ">
-                                                    <thead className="sticky-top bg-white">
+                                        <div className="col-12 table-responsive table-section">
+                                            <table className="table">
+                                                <thead className="sticky-top bg-white">
                                                     <tr>
-                                                        <td className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</td>
-                                                        <td className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Unit</td>
-                                                        <td className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Brand</td>
-                                                        <td className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Categories</td>
-                                                        <td className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Details</td>
-                                                        <td className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Action</td>
+                                                        <td>Name</td>
+                                                        <td>Stock</td>
+                                                        <td>Brand</td>
+                                                        <td>Category</td>
+                                                        <td>Details</td>
+                                                        <td>Action</td>
                                                     </tr>
-                                                    </thead>
-                                                    <tbody>
+                                                </thead>
+                                                <tbody>
                                                     {
-                                                        DataList.map((item)=>
-                                                            <tr>
-                                                                <td><p className="text-xs text-start">{item.Name}</p></td>
-                                                                <td><p className="text-xs text-start">{item.Unit}</p></td>
-                                                                <td><p className="text-xs text-start">{item.brands[0]?item.brands[0]['Name']:""}</p></td>
-                                                                <td><p className="text-xs text-start">{item.categories[0]?item.categories[0]['Name']:""}</p></td>
-                                                                <td><p className="text-xs text-start">{item.Details}</p></td>
+                                                        DataList.map((item) =>
+                                                            <tr key={item._id}>
+                                                                <td>{item.Name}</td>
+                                                                <td>{item.TotalPurchased - item.TotalSold}</td>
+                                                                <td>{item.brands?.[0]?.Name || ""}</td>
+                                                                <td>{item.categories?.[0]?.Name || ""}</td>
+                                                                <td>{item.Details}</td>
                                                                 <td>
                                                                     <Link to={`/ProductCreateUpdatePage?id=${item._id}`} className="btn text-info btn-outline-light p-2 mb-0 btn-sm">
-                                                                        <AiOutlineEdit size={15} />
+                                                                        <AiOutlineEdit size={15}/>
                                                                     </Link>
-                                                                    <button onClick={DeleteItem.bind(this,item._id)} className="btn btn-outline-light text-danger p-2 mb-0 btn-sm ms-2">
-                                                                        <AiOutlineDelete size={15} />
+                                                                    <button onClick={() => DeleteItem(item._id)} className="btn btn-outline-light text-danger p-2 mb-0 btn-sm ms-2">
+                                                                        <AiOutlineDelete size={15}/>
                                                                     </button>
                                                                 </td>
                                                             </tr>
                                                         )
                                                     }
-
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <div className="col-12 mt-5">
-                                            <nav aria-label="Page navigation example">
+                                    </div>
+
+                                    <div className="row mt-5">
+                                        <div className="col-12">
+                                            <nav>
                                                 <ReactPaginate
                                                     previousLabel="<"
                                                     nextLabel=">"
@@ -160,10 +152,10 @@ const ProductList = () => {
                                             </nav>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>

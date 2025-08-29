@@ -22,13 +22,93 @@ exports.UpdateProduct = async (req, res) => {
 }
 
 exports.ProductsList = async (req, res) => {
-    let SearchRgx={'$regex':req.params.searchKeyword, '$options':'i'};
-    let JoinStage1={$lookup:{from:'brands', localField:'BrandID', foreignField:'_id', as:'brands'}};
-    let JoinStage2={$lookup:{from:'categories', localField:'CategoryID', foreignField:'_id', as:'categories'}};
-    let SearchArray=[{Name:SearchRgx},{Unit:SearchRgx},{Details:SearchRgx},{'brands.Name':SearchRgx},{'categories.Name':SearchRgx}];
-    let Result=await ListTwoJoinService(req,DataModel,SearchArray,JoinStage1,JoinStage2);
-    res.status(200).json(Result);
-}
+    try {
+        let pageNo = Number(req.params.pageNo);
+        let perPage = Number(req.params.perPage);
+        let searchValue = req.params.searchKeyword;
+        let skipRow = (pageNo - 1) * perPage;
+        let UserEmail = req.headers['email'];
+
+        let SearchRgx = { '$regex': searchValue, '$options': 'i' };
+        let SearchArray = [
+            { Name: SearchRgx },
+            { Details: SearchRgx },
+            { 'brands.Name': SearchRgx },
+            { 'categories.Name': SearchRgx }
+        ];
+
+        let aggregatePipeline = [
+            { $match: { UserEmail } },
+
+            // Join with brands and categories
+            {
+                $lookup: {
+                    from: 'brands',
+                    localField: 'BrandID',
+                    foreignField: '_id',
+                    as: 'brands'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'CategoryID',
+                    foreignField: '_id',
+                    as: 'categories'
+                }
+            },
+
+            // Join with purchasesproducts to calculate purchased quantity
+            {
+                $lookup: {
+                    from: 'purchasesproducts',
+                    localField: '_id',
+                    foreignField: 'ProductID',
+                    as: 'purchases'
+                }
+            },
+
+            // Join with salesproducts to calculate sold quantity
+            {
+                $lookup: {
+                    from: 'salesproducts',
+                    localField: '_id',
+                    foreignField: 'ProductID',
+                    as: 'sales'
+                }
+            },
+
+            // Calculate stock: Purchased - Sold
+            {
+                $addFields: {
+                    TotalPurchased: { $sum: "$purchases.Qty" },
+                    TotalSold: { $sum: "$sales.Qty" },
+                    Stock: { $subtract: [ { $sum: "$purchases.Qty" }, { $sum: "$sales.Qty" } ] }
+                }
+            }
+        ];
+
+        // Apply search filter if not '0'
+        if (searchValue !== '0') {
+            aggregatePipeline.push({ $match: { $or: SearchArray } });
+        }
+
+        // Pagination
+        aggregatePipeline.push({
+            $facet: {
+                Total: [{ $count: "count" }],
+                Rows: [{ $skip: skipRow }, { $limit: perPage }]
+            }
+        });
+
+        let data = await DataModel.aggregate(aggregatePipeline);
+        res.status(200).json({ status: 'success', data });
+    } catch (error) {
+        res.status(500).json({ status: 'error', data: error.toString() });
+    }
+};
+
+
 
 exports.ProductDetailsByID=async(req,res)=>{
   let Result=await DetailsByIDService(req,DataModel)

@@ -53,7 +53,7 @@ export async function PurchaseByDateRequest(FormData,ToDate) {
     try {
         store.dispatch(ShowLoader())
         let PostBody={"FormDate":FormData+"T00:00:00.000+00:00","ToDate":ToDate+"T00:00:00.000+00:00"}
-        let URL = BaseURL+"/PurchaseByDate";
+        let URL = BaseURL+"/PurchasesByDate";
         const result = await axios.post(URL,PostBody,AxiosHeader);
         store.dispatch(HideLoader());
         if (result.status === 200 && result.data['status']==="success") {

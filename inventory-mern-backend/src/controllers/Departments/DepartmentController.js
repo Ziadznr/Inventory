@@ -5,7 +5,7 @@ const UpdateService = require('../../services/common/UpdateService');
 const DeleteService = require('../../services/common/DeleteService');
 const ListOneJoinService = require('../../services/common/ListOneJoinService');
 const DetailsByIDService = require('../../services/common/DetailsByIDService');
-const DropDownService = require('../../services/common/DropDownService');
+const DropDownService = require('../../services/Department/DropdownService');
 const CheckAssociateService = require('../../services/common/CheckAssociateService');
 const mongoose = require('mongoose');
 
@@ -104,12 +104,31 @@ exports.DeleteDepartment = async (req, res) => {
   }
 };
 
-// ------------------ Department Dropdown ------------------
+// ------------------ Department Dropdown (with optional faculty filter) ------------------
+// controllers/DepartmentsController.js
+
 exports.DepartmentDropdown = async (req, res) => {
-    try {
-        const result = await DropDownService(req, DepartmentModel, { _id: 1, Name: 1 });
-        res.status(200).json(result);
-    } catch (err) {
-        res.status(500).json({ status: "error", message: err.message });
+  try {
+    const facultyID = req.params.facultyID || null;
+    let filter = {};
+
+    if (facultyID) {
+      filter.FacultyID = new mongoose.Types.ObjectId(facultyID);
     }
+
+    const result = await DropDownService(
+      req,
+      DepartmentModel,
+      { _id: 1, Name: 1 },
+      filter   // ✅ now passed into service
+    );
+
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ success: "fail", message: err.message });
+  }
 };
+
+
+
+
