@@ -23,6 +23,7 @@ const SalesCreateUpdate = () => {
   const [sectionList, setSectionList] = useState([]);
   const [customerList, setCustomerList] = useState([]);
   const [category, setCategory] = useState("");
+  const [stock, setStock] = useState(0);
 
   const SaleFormValue = useSelector(state => state.sale.SaleFormValue);
   const ProductDropDown = useSelector(state => state.sale.ProductDropDown);
@@ -31,6 +32,13 @@ const SalesCreateUpdate = () => {
   const productRef = useRef();
   const qtyRef = useRef();
   const unitPriceRef = useRef();
+
+  // ---------------- Helper: Calculate Grand Total ----------------
+  const calculateGrandTotal = (items, otherCost) => {
+    const itemsTotal = items.reduce((acc, item) => acc + item.Total, 0);
+    const other = parseFloat(otherCost) || 0;
+    return itemsTotal + other;
+  };
 
   // ---------------- Initial Load ----------------
   useEffect(() => {
@@ -45,12 +53,10 @@ const SalesCreateUpdate = () => {
   const onCategoryChange = (value) => {
     setCategory(value);
     store.dispatch(OnChangeSaleInput({ Name: "Category", Value: value }));
-
     store.dispatch(OnChangeSaleInput({ Name: "FacultyID", Value: "" }));
     store.dispatch(OnChangeSaleInput({ Name: "DepartmentID", Value: "" }));
     store.dispatch(OnChangeSaleInput({ Name: "SectionID", Value: "" }));
     store.dispatch(OnChangeSaleInput({ Name: "CustomerID", Value: "" }));
-
     setDepartmentList([]);
     setSectionList([]);
     setCustomerList([]);
@@ -69,7 +75,6 @@ const SalesCreateUpdate = () => {
     store.dispatch(OnChangeSaleInput({ Name: "DepartmentID", Value: "" }));
     store.dispatch(OnChangeSaleInput({ Name: "SectionID", Value: "" }));
     store.dispatch(OnChangeSaleInput({ Name: "CustomerID", Value: "" }));
-
     setDepartmentList([]);
     setSectionList([]);
     setCustomerList([]);
@@ -87,7 +92,6 @@ const SalesCreateUpdate = () => {
   const onDepartmentChange = async (deptId) => {
     store.dispatch(OnChangeSaleInput({ Name: "DepartmentID", Value: deptId }));
     store.dispatch(OnChangeSaleInput({ Name: "CustomerID", Value: "" }));
-
     setCustomerList([]);
 
     if (["Teacher", "Chairman"].includes(category) && SaleFormValue.FacultyID && deptId) {
@@ -100,36 +104,69 @@ const SalesCreateUpdate = () => {
   const onSectionChange = async (sectionId) => {
     store.dispatch(OnChangeSaleInput({ Name: "SectionID", Value: sectionId }));
     store.dispatch(OnChangeSaleInput({ Name: "CustomerID", Value: "" }));
-
     setCustomerList([]);
+
     if (category === "Officer" && sectionId) {
       const customers = await CustomerDropDownRequest(category, null, null, sectionId);
       setCustomerList(customers);
     }
   };
 
+  // ---------------- Product Change ----------------
+  const onProductChange = (e) => {
+    const selectedId = e.target.value;
+    const selectedProduct = ProductDropDown.find(p => String(p._id) === selectedId);
+    setStock(selectedProduct?.Stock ?? 0);
+  };
+
   // ---------------- Add Product to Cart ----------------
   const OnAddCart = () => {
     const productValue = productRef.current.value;
     const productName = productRef.current.selectedOptions[0]?.text;
-    const qtyValue = qtyRef.current.value;
-    const unitPriceValue = unitPriceRef.current.value;
+    const qtyValue = parseInt(qtyRef.current.value, 10);
+    const unitPriceValue = parseInt(unitPriceRef.current.value, 10);
 
     if (IsEmpty(productValue)) return ErrorToast("Select Product");
-    if (IsEmpty(qtyValue)) return ErrorToast("Qty Required");
-    if (IsEmpty(unitPriceValue)) return ErrorToast("Unit Price Required");
+    if (!qtyValue || qtyValue <= 0) return ErrorToast("Qty Required");
+    if (!unitPriceValue || unitPriceValue <= 0) return ErrorToast("Unit Price Required");
+    if (qtyValue > stock) return ErrorToast(`Only ${stock} items in stock`);
 
-    store.dispatch(SetSaleItemList({
+    const newItem = {
       ProductID: productValue,
       ProductName: productName,
       Qty: qtyValue,
       UnitCost: unitPriceValue,
-      Total: parseInt(qtyValue) * parseInt(unitPriceValue)
+      Total: qtyValue * unitPriceValue
+    };
+
+    store.dispatch(SetSaleItemList(newItem));
+
+    // Update GrandTotal including OtherCost
+    const updatedItems = [...SaleItemList, newItem];
+    store.dispatch(OnChangeSaleInput({
+      Name: "GrandTotal",
+      Value: calculateGrandTotal(updatedItems, SaleFormValue.OtherCost)
     }));
   };
 
   // ---------------- Remove Product from Cart ----------------
-  const removeCart = (i) => store.dispatch(RemoveSaleItem(i));
+  const removeCart = (index) => {
+    const updatedItems = SaleItemList.filter((_, i) => i !== index);
+    store.dispatch(RemoveSaleItem(index));
+    store.dispatch(OnChangeSaleInput({
+      Name: "GrandTotal",
+      Value: calculateGrandTotal(updatedItems, SaleFormValue.OtherCost)
+    }));
+  };
+
+  // ---------------- Update GrandTotal when OtherCost changes ----------------
+  const onOtherCostChange = (value) => {
+    store.dispatch(OnChangeSaleInput({ Name: "OtherCost", Value: value }));
+    store.dispatch(OnChangeSaleInput({
+      Name: "GrandTotal",
+      Value: calculateGrandTotal(SaleItemList, value)
+    }));
+  };
 
   // ---------------- Create Sale ----------------
   const CreateNewSale = async () => {
@@ -153,7 +190,11 @@ const SalesCreateUpdate = () => {
                 {/* Category */}
                 <div className="mb-2">
                   <label className="form-label">Category</label>
-                  <select className="form-select form-select-sm" value={category} onChange={(e) => onCategoryChange(e.target.value)}>
+                  <select
+                    className="form-select form-select-sm"
+                    value={category}
+                    onChange={(e) => onCategoryChange(e.target.value)}
+                  >
                     <option value="">Select Category</option>
                     <option value="Dean">Dean</option>
                     <option value="Teacher">Teacher</option>
@@ -166,7 +207,10 @@ const SalesCreateUpdate = () => {
                 {["Dean", "Teacher", "Chairman"].includes(category) && (
                   <div className="mb-2">
                     <label className="form-label">Faculty</label>
-                    <select className="form-select form-select-sm" onChange={(e) => onFacultyChange(e.target.value)}>
+                    <select
+                      className="form-select form-select-sm"
+                      onChange={(e) => onFacultyChange(e.target.value)}
+                    >
                       <option value="">Select Faculty</option>
                       {facultyList.map(f => <option key={f._id} value={f._id}>{f.Name}</option>)}
                     </select>
@@ -177,7 +221,10 @@ const SalesCreateUpdate = () => {
                 {["Teacher", "Chairman"].includes(category) && departmentList.length > 0 && (
                   <div className="mb-2">
                     <label className="form-label">Department</label>
-                    <select className="form-select form-select-sm" onChange={(e) => onDepartmentChange(e.target.value)}>
+                    <select
+                      className="form-select form-select-sm"
+                      onChange={(e) => onDepartmentChange(e.target.value)}
+                    >
                       <option value="">Select Department</option>
                       {departmentList.map(d => <option key={d._id} value={d._id}>{d.Name}</option>)}
                     </select>
@@ -188,7 +235,10 @@ const SalesCreateUpdate = () => {
                 {category === "Officer" && sectionList.length > 0 && (
                   <div className="mb-2">
                     <label className="form-label">Section</label>
-                    <select className="form-select form-select-sm" onChange={(e) => onSectionChange(e.target.value)}>
+                    <select
+                      className="form-select form-select-sm"
+                      onChange={(e) => onSectionChange(e.target.value)}
+                    >
                       <option value="">Select Section</option>
                       {sectionList.map(s => <option key={s._id} value={s._id}>{s.Name}</option>)}
                     </select>
@@ -199,7 +249,13 @@ const SalesCreateUpdate = () => {
                 {customerList.length > 0 && (
                   <div className="mb-2">
                     <label className="form-label">Customer</label>
-                    <select className="form-select form-select-sm" onChange={(e) => store.dispatch(OnChangeSaleInput({ Name: "CustomerID", Value: e.target.value }))}>
+                    <select
+                      className="form-select form-select-sm"
+                      value={SaleFormValue.CustomerID || ""}
+                      onChange={(e) =>
+                        store.dispatch(OnChangeSaleInput({ Name: "CustomerID", Value: e.target.value }))
+                      }
+                    >
                       <option value="">Select Customer</option>
                       {customerList.map(c => <option key={c._id} value={c._id}>{c.CustomerName}</option>)}
                     </select>
@@ -207,12 +263,35 @@ const SalesCreateUpdate = () => {
                 )}
 
                 {/* Other Sale Fields */}
-                {["VatTax", "Discount", "OtherCost", "ShippingCost", "GrandTotal", "Note"].map((field, idx) => (
-                  <div className="mb-2" key={idx}>
-                    <label className="form-label">{field}</label>
-                    <input type="number" className="form-control form-control-sm" onChange={(e) => store.dispatch(OnChangeSaleInput({ Name: field, Value: e.target.value }))} />
-                  </div>
-                ))}
+                <div className="mb-2">
+                  <label className="form-label">Other Cost</label>
+                  <input
+                    type="number"
+                    className="form-control form-control-sm"
+                    value={SaleFormValue.OtherCost || ""}
+                    onChange={(e) => onOtherCostChange(e.target.value)}
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <label className="form-label">Grand Total</label>
+                  <input
+                    type="number"
+                    className="form-control form-control-sm"
+                    value={SaleFormValue.GrandTotal || ""}
+                    readOnly
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <label className="form-label">Note</label>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    value={SaleFormValue.Note || ""}
+                    onChange={(e) => store.dispatch(OnChangeSaleInput({ Name: "Note", Value: e.target.value }))}
+                  />
+                </div>
 
                 <button className="btn btn-sm btn-success mt-2" onClick={CreateNewSale}>Create</button>
               </div>
@@ -224,16 +303,22 @@ const SalesCreateUpdate = () => {
             <div className="card h-100">
               <div className="card-body">
                 <div className="row">
-                  <div className="col-6 mb-2">
+                  <div className="col-4 mb-2">
                     <label className="form-label">Select Product</label>
-                    <select ref={productRef} className="form-select form-select-sm">
+                    <select ref={productRef} className="form-select form-select-sm" onChange={onProductChange}>
                       <option value="">Select Product</option>
-                      {ProductDropDown.map(p => <option key={p._id} value={p._id}>{p.Name}</option>)}
+                      {ProductDropDown.map(p => (
+                        <option key={p._id} value={p._id}>{p.Name}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="col-2 mb-2">
-                  
-                    <input ref={qtyRef} className="form-control form-control-sm" type="number" />
+                    <label className="form-label">Stock</label>
+                    <input value={stock} readOnly className="form-control form-control-sm" type="number" />
+                  </div>
+                  <div className="col-2 mb-2">
+                    <label className="form-label">Qty</label>
+                    <input ref={qtyRef} className="form-control form-control-sm" type="number" min={1} max={stock || undefined} />
                   </div>
                   <div className="col-2 mb-2">
                     <label className="form-label">Unit Price</label>

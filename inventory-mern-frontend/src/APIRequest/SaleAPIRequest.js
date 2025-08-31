@@ -17,17 +17,37 @@ const AxiosHeader = { headers: { token: getToken() } };
 export async function SaleListRequest(pageNo, perPage, searchKeyword) {
   try {
     store.dispatch(ShowLoader());
+
     const URL = `${BaseURL}/SalesList/${pageNo}/${perPage}/${searchKeyword || "0"}`;
+    console.log("SaleListRequest URL:", URL);
+
     const result = await axios.get(URL, AxiosHeader);
+    console.log("Raw result from API:", result.data);
 
     if (result.status === 200 && result.data?.status === "success") {
-      const rows = result.data?.data?.[0]?.Rows || [];
-      const total = result.data?.data?.[0]?.Total?.[0]?.count || 0;
+      // Use data directly
+      const rows = result.data?.data || [];
+      console.log("Rows from API:", rows);
 
-      store.dispatch(SetSaleList(rows));
-      store.dispatch(SetSaleListTotal(total));
+      // Map each sale to include CustomerData with string names
+      const mappedRows = rows.map(sale => {
+        const customer = sale.customers?.[0] || {};
+        return {
+          ...sale,
+          CustomerData: {
+            CustomerName: customer.CustomerName || "-",
+            Category: customer.Category || "-",
+            FacultyName: sale.faculty?.[0]?.Name || "-",
+            DepartmentName: sale.department?.[0]?.Name || "-",
+            SectionName: sale.section?.[0]?.Name || "-"
+          }
+        };
+      });
 
-      if (rows.length === 0) ErrorToast("No Data Found");
+      store.dispatch(SetSaleList(mappedRows));
+      store.dispatch(SetSaleListTotal(mappedRows.length)); // Or use a proper total from backend
+
+      if (mappedRows.length === 0) ErrorToast("No Data Found");
     } else {
       store.dispatch(SetSaleList([]));
       store.dispatch(SetSaleListTotal(0));
@@ -40,6 +60,8 @@ export async function SaleListRequest(pageNo, perPage, searchKeyword) {
     store.dispatch(HideLoader());
   }
 }
+
+
 
 // ------------------ Customer Dropdown ------------------
 export async function CustomerDropDownRequest(category = null, facultyID = null, departmentID = null, sectionID = null) {
@@ -84,8 +106,15 @@ export async function ProductDropDownRequest() {
     const result = await axios.get(URL, AxiosHeader);
 
     if (result.status === 200 && result.data?.status === "success") {
-      const data = result.data?.data || [];
+      // ✅ Map products with guaranteed Stock
+      const data = (result.data?.data || []).map(p => ({
+        ...p,
+        Stock: p.Stock ?? 0  // Default 0 if Stock is missing
+      }));
+
+      console.log("ProductsDropDown final data:", data); // debug
       store.dispatch(SetProductDropDown(data));
+
       if (data.length === 0) ErrorToast("No Product Found");
       return data;
     } else {
@@ -102,6 +131,10 @@ export async function ProductDropDownRequest() {
     store.dispatch(HideLoader());
   }
 }
+
+
+
+
 
 // ------------------ Create Sale ------------------
 export async function CreateSaleRequest(ParentBody, ChildsBody) {
@@ -154,7 +187,7 @@ export async function FacultyDropdownRequest() {
 }
 
 
-// ------------------ Department Dropdown ------------------
+
 // ------------------ Department Dropdown ------------------
 export async function DepartmentDropdownRequest(facultyID = "") {
   try {

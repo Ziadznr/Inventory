@@ -1,32 +1,40 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import "../../src/assets/css/LandingPage.css";
+import Logo from "../../src/assets/images/ps.png";
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="vh-100 d-flex align-items-center justify-content-center" style={{ background: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)" }}>
-      <div className="card shadow-lg p-5 rounded-4 text-center" style={{ minWidth: "350px", maxWidth: "450px", backgroundColor: "rgba(255, 255, 255, 0.95)" }}>
-        <h1 className="mb-3 fw-bold" style={{ color: "#333" }}>Welcome</h1>
-        <p className="mb-4 text-secondary">Please select your login type to continue</p>
-        <div className="d-grid gap-3">
+    <div className="landing-container">
+      {/* Main heading outside the form */}
+      <h1 className="landing-main-title">PSTU Stock Management System</h1>
+
+      {/* Centered Logo */}
+      <div className="logo-wrapper">
+        <img src={Logo} alt="PSTU Logo" className="landing-logo" />
+      </div>
+
+      {/* Login form card */}
+      <div className="landing-card">
+        <h2 className="landing-title">Welcome</h2>
+        <p className="landing-subtitle">
+          Please select your login type to continue
+        </p>
+
+        <div className="landing-buttons">
           <button
-            className="btn btn-primary btn-lg fw-semibold shadow-sm"
+            className="landing-btn login-btn"
             onClick={() => navigate("/Login")}
-            style={{ transition: "transform 0.2s" }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
           >
-            Admin / User Login
+            Admin Login / Registration
           </button>
           <button
-            className="btn btn-success btn-lg fw-semibold shadow-sm"
+            className="landing-btn chairman-btn"
             onClick={() => navigate("/ChairmanLogin")}
-            style={{ transition: "transform 0.2s" }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
           >
-            Chairman Login
+            User Login / Registration
           </button>
         </div>
       </div>

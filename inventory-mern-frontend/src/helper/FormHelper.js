@@ -4,9 +4,10 @@ const MobileRegx= /^(?:\+?88)?01[3-9]\d{8}$/;
 
 class FormHelper{
     IsEmpty(value){
-        return !value || value.trim().length === 0;
-    
-    }
+    if (value === null || value === undefined) return true;
+    if (typeof value === "string") return value.trim().length === 0;
+    return false; // numbers or other types are considered non-empty
+}
     IsMobile(value){
         return MobileRegx.test(value)
     }

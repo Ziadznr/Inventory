@@ -9,7 +9,7 @@ const SalesProductsModel = require('../../models/Sales/SalesProductsModel');
 const PurchasesProductsModel = require('../../models/Purchases/PurchasesProductsModel');
 const mongoose = require('mongoose');
 const DetailsByIDService = require("../../services/common/DetailsByIDService");
-const DropDownService =require('../../services/common/DropDownService')
+const ProductsDropDown =require('../../services/Products/ProductsDropDown')
 
 exports.CreateProduct = async (req, res) => {
     let Result=await CreateService(req,DataModel)
@@ -139,7 +139,14 @@ exports.DeleteProduct = async (req, res) => {
   }
 }
 
-exports.ProductsDropDown=async (req, res) => {
-    let Result= await DropDownService(req,DataModel,{_id:1,Name:1})
-    res.status(200).json(Result)
-}
+exports.ProductsDropDown = async (req, res) => {
+  try {
+    const userEmail = req.headers['email'];
+    const result = await ProductsDropDown(userEmail);
+    console.log("ProductsDropDown result:", result);
+    res.status(200).json({ status: 'success', data: result });
+  } catch (error) {
+    console.error("ProductsDropDown Error:", error);
+    res.status(500).json({ status: 'fail', data: error.toString() });
+  }
+};

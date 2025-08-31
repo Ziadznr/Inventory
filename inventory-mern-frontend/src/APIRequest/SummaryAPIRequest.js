@@ -1,100 +1,55 @@
 import axios from "axios";
-import {ErrorToast, SuccessToast} from "../helper/FormHelper";
+import { ErrorToast } from "../helper/FormHelper";
 import store from "../redux/store/store";
-import {HideLoader, ShowLoader} from "../redux/state-slice/settings-slice";
-import {getToken} from "../helper/SessionHelper";
+import { HideLoader, ShowLoader } from "../redux/state-slice/settings-slice";
+import { getToken, removeSessions } from "../helper/SessionHelper";
 import {
     SetExpenseChart,
-    SetExpenseTotal, SetPurchaseChart, SetPurchaseTotal,
+    SetExpenseTotal,
+    SetPurchaseChart,
+    SetPurchaseTotal,
     SetReturnChart,
-    SetReturnTotal, SetSaleChart, SetSaleTotal
+    SetReturnTotal,
+    SetSaleChart,
+    SetSaleTotal
 } from "../redux/state-slice/dashboard-slice";
-import {BaseURL} from "../helper/config";
-const AxiosHeader={headers:{"token":getToken()}}
+import { BaseURL } from "../helper/config";
 
+const getAxiosHeader = () => ({ headers: { token: getToken() } });
 
-export async function ExpensesSummary(){
+async function fetchSummary(url, setChartAction, setTotalAction) {
     try {
-        
-        store.dispatch(ShowLoader())
-        
-        let URL=BaseURL+"/ExpensesSummary";
-        
-        let res=await axios.get(URL,AxiosHeader)
-        
-        store.dispatch(HideLoader())
-        if(res.status===200){
-            
-            store.dispatch(SetExpenseChart(res.data['data'][0]['Last30Days']))
-            store.dispatch(SetExpenseTotal(res.data['data'][0]['Total'][0]['TotalAmount']))
+        store.dispatch(ShowLoader());
+        const res = await axios.get(url, getAxiosHeader());
+        store.dispatch(HideLoader());
+
+        if (res.status === 200) {
+            const chartData = res?.data?.data?.[0]?.Last30Days || [];
+            const totalAmount = res?.data?.data?.[0]?.Total?.[0]?.TotalAmount || 0;
+            store.dispatch(setChartAction(chartData));
+            store.dispatch(setTotalAction(totalAmount));
+        } else {
+            ErrorToast("Something Went Wrong");
         }
-        else{
-            ErrorToast("Something Went Wrong")
-        }
-    }
-    catch (e){
-        store.dispatch(HideLoader())
-        ErrorToast("Something Went Wrong")
+    } catch (e) {
+        store.dispatch(HideLoader());
+        if (e.response?.status === 401) removeSessions();
+        else ErrorToast(e.response?.data?.message || "Something Went Wrong");
     }
 }
 
-export async function ReturnSummary(){
-    try {
-        store.dispatch(ShowLoader())
-        let URL=BaseURL+"/ReturnSummary";
-        let res=await axios.get(URL,AxiosHeader)
-        store.dispatch(HideLoader())
-        if(res.status===200){
-            store.dispatch(SetReturnChart(res.data['data'][0]['Last30Days']))
-            store.dispatch(SetReturnTotal(res.data['data'][0]['Total'][0]['TotalAmount']))
-        }
-        else{
-            ErrorToast("Something Went Wrong")
-        }
-    }
-    catch (e){
-        store.dispatch(HideLoader())
-        ErrorToast("Something Went Wrong")
-    }
+export async function ExpensesSummary() {
+    await fetchSummary(`${BaseURL}/ExpensesSummary`, SetExpenseChart, SetExpenseTotal);
 }
 
-export async function SaleSummary(){
-    try {
-        store.dispatch(ShowLoader())
-        let URL=BaseURL+"/SalesSummary";
-        let res=await axios.get(URL,AxiosHeader)
-        store.dispatch(HideLoader())
-        if(res.status===200){
-            store.dispatch(SetSaleChart(res.data['data'][0]['Last30Days']))
-            store.dispatch(SetSaleTotal(res.data['data'][0]['Total'][0]['TotalAmount']))
-        }
-        else{
-            ErrorToast("Something Went Wrong")
-        }
-    }
-    catch (e){
-        store.dispatch(HideLoader())
-        ErrorToast("Something Went Wrong")
-    }
+export async function ReturnSummary() {
+    await fetchSummary(`${BaseURL}/ReturnSummary`, SetReturnChart, SetReturnTotal);
 }
 
-export async function PurchaseSummary(){
-    try {
-        store.dispatch(ShowLoader())
-        let URL=BaseURL+"/PurchaseSummary";
-        let res=await axios.get(URL,AxiosHeader)
-        store.dispatch(HideLoader())
-        if(res.status===200){
-            store.dispatch(SetPurchaseChart(res.data['data'][0]['Last30Days']))
-            store.dispatch(SetPurchaseTotal(res.data['data'][0]['Total'][0]['TotalAmount']))
-        }
-        else{
-            ErrorToast("Something Went Wrong")
-        }
-    }
-    catch (e){
-        store.dispatch(HideLoader())
-        ErrorToast("Something Went Wrong")
-    }
+export async function SaleSummary() {
+    await fetchSummary(`${BaseURL}/SalesSummary`, SetSaleChart, SetSaleTotal);
 }
 
+export async function PurchaseSummary() {
+    await fetchSummary(`${BaseURL}/PurchaseSummary`, SetPurchaseChart, SetPurchaseTotal);
+}
