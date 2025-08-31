@@ -10,6 +10,7 @@ const hpp = require('hpp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
+
 const mongoose = require('mongoose');
 
 // Middleware
@@ -20,6 +21,8 @@ const apiCorsOptions = {
     origin: '*',
     credentials: true,
 };
+
+
 
 app.use('/api/v1', cors(apiCorsOptions));
 app.use(helmet({ contentSecurityPolicy: false }));

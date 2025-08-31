@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import { getToken } from "./helper/SessionHelper";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import FullscreenLoader from "./components/MasterLayout/FullscreenLoader.jsx";
 import NotFoundPage from "./pages/NotFound/NotFoundPage";
 
@@ -61,96 +62,71 @@ const App = () => {
     <Fragment>
       <BrowserRouter>
         <Routes>
-          {token ? (
-            <>
-              {/* Protected Pages for logged-in users */}
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/Profile" element={<ProfilePage />} />
+          {/* Default landing page */}
+          <Route path="/" element={token ? <Navigate to="/Dashboard" /> : <LandingPage />} />
 
-              {/* Brand */}
+          {/* Authenticated routes */}
+          {token && (
+            <>
+              <Route path="/Dashboard" element={<DashboardPage />} />
+              <Route path="/Profile" element={<ProfilePage />} />
+              {/* Other protected routes */}
               <Route path="/BrandCreateUpdatePage" element={<BrandCreateUpdatePage />} />
               <Route path="/BrandListPage" element={<BrandListPage />} />
-
-              {/* Category */}
               <Route path="/CategoryCreateUpdatePage" element={<CategoryCreateUpdatePage />} />
               <Route path="/CategoryListPage" element={<CategoryListPage />} />
-
-              {/* Section */}
               <Route path="/SectionOperationPage" element={<SectionOperationPage />} />
-
-              {/* Faculty */}
               <Route path="/FacultyOperationPage" element={<FacultyOperationPage />} />
-
-              {/* Department */}
               <Route path="/department-list" element={<DepartmentListPage />} />
               <Route path="/DepartmentCreateUpdatePage" element={<DepartmentCreateUpdatePage />} />
-
-              {/* Customer */}
               <Route path="/CustomerCreateUpdatePage" element={<CustomerCreateUpdatePage />} />
               <Route path="/CustomerListPage" element={<CustomerListPage />} />
-
-              {/* Expense Type */}
               <Route path="/ExpenseTypeCreateUpdatePage" element={<ExpenseTypeCreateUpdatePage />} />
               <Route path="/ExpenseTypeListPage" element={<ExpenseTypeListPage />} />
-
-              {/* Expense */}
               <Route path="/ExpenseCreateUpdatePage" element={<ExpenseCreateUpdatePage />} />
               <Route path="/ExpenseListPage" element={<ExpenseListPage />} />
-
-              {/* Product */}
               <Route path="/ProductCreateUpdatePage" element={<ProductCreateUpdatePage />} />
               <Route path="/ProductListPage" element={<ProductListPage />} />
-
-              {/* Purchase */}
               <Route path="/PurchaseCreateUpdatePage" element={<PurchaseCreateUpdatePage />} />
               <Route path="/PurchaseListPage" element={<PurchaseListPage />} />
-
-              {/* Return */}
               <Route path="/ReturnCreateUpdatePage" element={<ReturnCreateUpdatePage />} />
               <Route path="/ReturnListPage" element={<ReturnListPage />} />
-
-              {/* Sales */}
               <Route path="/SalesCreateUpdatePage" element={<SalesCreateUpdatePage />} />
               <Route path="/SalesListPage" element={<SalesListPage />} />
-
-              {/* Supplier */}
               <Route path="/SupplierCreateUpdatePage" element={<SupplierCreateUpdatePage />} />
               <Route path="/SupplierListPage" element={<SupplierListPage />} />
-
-              {/* Reports */}
               <Route path="/PurchaseReportPage" element={<PurchaseReportPage />} />
               <Route path="/ReturnReportPage" element={<ReturnReportPage />} />
               <Route path="/SaleReportPage" element={<SaleReportPage />} />
               <Route path="/ExpenseReportPage" element={<ExpenseReportPage />} />
-
-              <Route path="*" element={<NotFoundPage />} />
             </>
-          ) : (
-            <>
-              {/* Landing Page for login selection */}
-              <Route path="/" element={<LandingPage />} />
+          )}
 
-              {/* User Routes */}
+          {/* Public routes */}
+          {!token && (
+            <>
+              <Route path="/Start" element={<LandingPage />} />
               <Route path="/Login" element={<LoginPage />} />
               <Route path="/Registration" element={<RegistrationPage />} />
               <Route path="/SendOTP" element={<SendOTPPage />} />
               <Route path="/VerifyOTP" element={<VerifyOTPPage />} />
               <Route path="/CreatePassword" element={<CreatePasswordPage />} />
-
-              {/* Chairman Routes */}
               <Route path="/ChairmanLogin" element={<ChairmanLoginPage />} />
               <Route path="/ChairmanRegistration" element={<ChairmanRegistrationPage />} />
               <Route path="/ChairmanSendOTP" element={<ChairmanSendOTPPage />} />
               <Route path="/ChairmanVerifyOTP" element={<ChairmanVerifyOTPPage />} />
               <Route path="/ChairmanCreatePassword" element={<ChairmanCreatePasswordPage />} />
               <Route path="/ChairmanProfile" element={<ChairmanProfilePage />} />
-
-              <Route path="*" element={<NotFoundPage />} />
             </>
           )}
+
+          {/* 404 fallback */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
+
       <FullscreenLoader />
+      <Toaster position="top-center" reverseOrder={false} />
     </Fragment>
   );
 };

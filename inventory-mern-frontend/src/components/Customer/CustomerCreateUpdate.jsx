@@ -98,8 +98,8 @@ const CustomerCreateUpdate = () => {
       return ErrorToast("Customer Name Required!");
     if (IsEmpty(FormValue.Phone))
       return ErrorToast("Customer Phone Required!");
-    if (!IsEmail(FormValue.UserEmail))
-      return ErrorToast("Valid Email Required!");
+    if (!IsEmail(FormValue.CustomerEmail))
+      return ErrorToast("Valid Email Required!"); // ✅ updated
 
     if (FormValue.Category === "Dean" && IsEmpty(FormValue.Faculty))
       return ErrorToast("Faculty Required for Dean!");
@@ -156,28 +156,15 @@ const CustomerCreateUpdate = () => {
                   />
                 </div>
 
-                {/* Email */}
+                {/* Customer Email */}
                 <div className="col-4 p-2">
                   <label className="form-label">Email</label>
                   <input
                     type="text"
                     className="form-control form-control-sm"
-                    value={FormValue.UserEmail}
+                    value={FormValue.CustomerEmail} // ✅ updated
                     onChange={(e) =>
-                      handleInputChange("UserEmail", e.target.value)
-                    }
-                  />
-                </div>
-
-                {/* Address */}
-                <div className="col-12 p-2">
-                  <label className="form-label">Address</label>
-                  <textarea
-                    className="form-control form-control-sm"
-                    rows={4}
-                    value={FormValue.Address}
-                    onChange={(e) =>
-                      handleInputChange("Address", e.target.value)
+                      handleInputChange("CustomerEmail", e.target.value)
                     }
                   />
                 </div>

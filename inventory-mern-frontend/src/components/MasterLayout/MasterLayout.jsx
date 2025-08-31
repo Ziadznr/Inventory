@@ -7,7 +7,7 @@ import { IoCreateOutline } from 'react-icons/io5';
 import { RiDashboardLine } from 'react-icons/ri';
 import { TbTruckDelivery } from 'react-icons/tb';
 
-import logo from "../../assets/images/Logo.svg"
+import logo from "../../assets/images/ps.png"
 import {getUserDetails, removeSessions} from "../../helper/SessionHelper";
 const MasterLayout = (props) => {
   let contentRef, sideNavRef,topNavRef = useRef();

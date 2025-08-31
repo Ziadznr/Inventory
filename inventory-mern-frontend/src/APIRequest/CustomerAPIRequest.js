@@ -18,27 +18,27 @@ const AxiosHeader = { headers: { token: getToken() } };
 export async function CustomerListRequest(pageNo, perPage, searchKeyword, category = "All") {
   try {
     store.dispatch(ShowLoader());
-
     const searchKey = searchKeyword || "0";
     const URL = `${BaseURL}/CustomersList/${pageNo}/${perPage}/${searchKey}/${category}`;
-    console.log("Requesting URL:", URL, "Headers:", AxiosHeader);
 
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
 
-    console.log("Full API result:", result.data);
-    console.log("data[0]:", result.data?.data?.[0]);
-    console.log("data[0].Rows:", result.data?.data?.[0]?.Rows);
-
     if (result.status === 200 && result.data?.success === "success") {
       const rows = result.data?.data?.[0]?.Rows || [];
-      const total = result.data?.data?.[0]?.Total?.[0]?.count || rows.length;
+      const totalCount = Number(result.data.data[0]?.Total?.[0]?.count) || rows.length || 0;
 
-      console.log("Final rows:", rows);
-      console.log("Total count:", total);
+      // Map populated names for easier frontend rendering
+      const mappedRows = rows.map((item) => ({
+        ...item,
+        FacultyName: item.FacultyName || "-",
+        DepartmentName: item.DepartmentName || "-",
+        SectionName: item.SectionName || "-"
+      }));
 
-      store.dispatch(SetCustomerList(rows));
-      store.dispatch(SetCustomerListTotal(total));
+      // Update store
+      store.dispatch(SetCustomerList(mappedRows));
+      store.dispatch(SetCustomerListTotal(totalCount));
     } else {
       store.dispatch(SetCustomerList([]));
       store.dispatch(SetCustomerListTotal(0));
@@ -53,6 +53,7 @@ export async function CustomerListRequest(pageNo, perPage, searchKeyword, catego
   }
 }
 
+
 // ------------------ Create or Update Customer ------------------
 export async function CreateCustomerRequest(PostBody, ObjectID) {
   try {
@@ -63,8 +64,7 @@ export async function CreateCustomerRequest(PostBody, ObjectID) {
     const payload = {
       CustomerName: PostBody.CustomerName,
       Phone: PostBody.Phone,
-      UserEmail: PostBody.UserEmail, // ✅ updated
-      Address: PostBody.Address,
+      CustomerEmail: PostBody.CustomerEmail, // ✅ Updated
       Category: PostBody.Category,
       Faculty: PostBody.Faculty || null,
       Department: PostBody.Department || null,
@@ -73,10 +73,24 @@ export async function CreateCustomerRequest(PostBody, ObjectID) {
 
     const result = await axios.post(URL, payload, AxiosHeader);
     store.dispatch(HideLoader());
-    console.log("CreateCustomerRequest API response:", result.data);
 
     if (result.status === 200 && result.data?.success === "success") {
       SuccessToast("Request Successful");
+
+      // ------------------ Send Email ------------------
+      try {
+        const EmailPayload = {
+          CustomerID: result.data?.data?._id || ObjectID, // use returned _id or ObjectID
+          Subject: "Customer Account Notification",
+          Message: `Hello ${PostBody.CustomerName},\n\nYour account has been successfully ${ObjectID ? "updated" : "created"} in our system.`
+        };
+        await axios.post(`${BaseURL}/send-email`, EmailPayload, AxiosHeader);
+        console.log("Email sent to customer:", PostBody.CustomerEmail);
+      } catch (emailErr) {
+        console.error("SendEmail error:", emailErr);
+        ErrorToast("Customer created but email sending failed");
+      }
+
       store.dispatch(ResetFormValue());
       store.dispatch(RefreshCustomerList());
       return true;
@@ -106,15 +120,13 @@ export async function FillCustomerFormRequest(ObjectID) {
     const URL = `${BaseURL}/CustomerDetailsByID/${ObjectID}`;
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
-    console.log("FillCustomerFormRequest API result:", result.data);
 
     if (result.status === 200 && result.data?.status === "success") {
       const FormValue = result.data?.data?.[0];
 
       store.dispatch(OnChangeCustomerInput({ Name: "CustomerName", Value: FormValue?.CustomerName || "" }));
       store.dispatch(OnChangeCustomerInput({ Name: "Phone", Value: FormValue?.Phone || "" }));
-      store.dispatch(OnChangeCustomerInput({ Name: "UserEmail", Value: FormValue?.UserEmail || "" })); // ✅ updated
-      store.dispatch(OnChangeCustomerInput({ Name: "Address", Value: FormValue?.Address || "" }));
+      store.dispatch(OnChangeCustomerInput({ Name: "CustomerEmail", Value: FormValue?.CustomerEmail || "" })); // ✅ updated
       store.dispatch(OnChangeCustomerInput({ Name: "Category", Value: FormValue?.Category || "" }));
       store.dispatch(OnChangeCustomerInput({ Name: "Faculty", Value: FormValue?.Faculty || "" }));
       store.dispatch(OnChangeCustomerInput({ Name: "Department", Value: FormValue?.Department || "" }));
@@ -139,7 +151,6 @@ export async function DeleteCustomerRequest(ObjectID) {
     const URL = `${BaseURL}/DeleteCustomer/${ObjectID}`;
     const result = await axios.get(URL, AxiosHeader);
     store.dispatch(HideLoader());
-    console.log("DeleteCustomerRequest API result:", result.data);
 
     if (result.status === 200 && result.data?.status === "associate") {
       ErrorToast(result.data?.data || "Cannot delete associated customer");
@@ -179,18 +190,13 @@ export async function DepartmentDropdownRequest(facultyID = "") {
   try {
     const URL = `${BaseURL}/DepartmentDropdown${facultyID ? "/" + facultyID : ""}`;
     const result = await axios.get(URL, AxiosHeader);
-
-    if (result.status === 200 && result.data?.status === "success") {
-      return result.data?.data || [];
-    }
-
+    if (result.status === 200 && result.data?.status === "success") return result.data?.data || [];
     return [];
   } catch (e) {
     console.log("DepartmentDropdownRequest error:", e);
     return [];
   }
 }
-
 
 export async function SectionDropdownRequest() {
   try {
@@ -201,5 +207,30 @@ export async function SectionDropdownRequest() {
   } catch (e) {
     console.log("SectionDropdownRequest error:", e);
     return [];
+  }
+}
+
+// ------------------ Send Email to Customer (frontend) ------------------
+export async function SendEmailToCustomerRequest(customerId, subject, message) {
+  try {
+    store.dispatch(ShowLoader());
+
+    const payload = { customerId, subject, message }; // match backend keys
+    const result = await axios.post(`${BaseURL}/send-email`, payload, AxiosHeader);
+
+    store.dispatch(HideLoader());
+
+    if (result.status === 200 && result.data?.status === "success") {
+      SuccessToast("Email sent successfully");
+      return true;
+    } else {
+      ErrorToast(result.data?.message || "Failed to send email");
+      return false;
+    }
+  } catch (e) {
+    store.dispatch(HideLoader());
+    console.log("SendEmailToCustomerRequest error:", e);
+    ErrorToast("Something Went Wrong");
+    return false;
   }
 }

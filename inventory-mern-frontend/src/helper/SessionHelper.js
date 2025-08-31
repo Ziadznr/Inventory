@@ -35,7 +35,7 @@ class SessionHelper {
     }
     removeSessions = () => {
         localStorage.clear();
-        window.location.href = "/login";
+        window.location.href = "/Start";
     };
 }
 

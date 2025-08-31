@@ -1,4 +1,7 @@
 const express=require('express')
+const multer = require("multer");
+
+const upload = multer({ dest: "uploads/" });
 const AuthVerifyMiddleware=require('../middlewares/AuthVerifyMiddleware.js')
 const UsersController=require('../controllers/Users/UsersController')
 const ChairmansController=require('../controllers/Chairmans/ChairmansController.js')
@@ -84,6 +87,7 @@ router.get("/CustomersList/:pageNo/:perPage/:searchKeyword/:category",AuthVerify
 router.get("/CustomersDropdown",AuthVerifyMiddleware,CustomersController.CustomersDropdown)
 router.get("/DeleteCustomer/:id",AuthVerifyMiddleware,CustomersController.DeleteCustomer)
 router.get("/CustomerDetailsByID/:id",AuthVerifyMiddleware,CustomersController.CustomersDetailsByID)
+router.post("/send-email", AuthVerifyMiddleware,upload.array("attachments"), CustomersController.SendEmailToCustomer);
 
 
 // Suppliers

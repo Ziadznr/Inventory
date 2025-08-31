@@ -5,24 +5,72 @@ const ListService = async (req, DataModel, SearchArray = [], MatchQuery = {}) =>
     const searchKeyword = req.params.searchKeyword || "0";
     const skipRow = (pageNo - 1) * perPage;
 
-    let matchStage = { ...MatchQuery }; // Start with category filter
+    let matchStage = { ...MatchQuery };
 
-    // Apply search only if searchKeyword is not "0"
     if (searchKeyword !== "0" && SearchArray.length > 0) {
       matchStage = { ...matchStage, $or: SearchArray };
     }
 
     const data = await DataModel.aggregate([
       { $match: matchStage },
+
+      // ---------------- Lookup Faculty ----------------
+      {
+        $lookup: {
+          from: "faculties",
+          localField: "Faculty",
+          foreignField: "_id",
+          as: "FacultyData"
+        }
+      },
+      { $unwind: { path: "$FacultyData", preserveNullAndEmptyArrays: true } },
+
+      // ---------------- Lookup Department ----------------
+      {
+        $lookup: {
+          from: "departments",
+          localField: "Department",
+          foreignField: "_id",
+          as: "DepartmentData"
+        }
+      },
+      { $unwind: { path: "$DepartmentData", preserveNullAndEmptyArrays: true } },
+
+      // ---------------- Lookup Section ----------------
+      {
+        $lookup: {
+          from: "sections",
+          localField: "Section",
+          foreignField: "_id",
+          as: "SectionData"
+        }
+      },
+      { $unwind: { path: "$SectionData", preserveNullAndEmptyArrays: true } },
+
+      // ---------------- Facet for pagination ----------------
       {
         $facet: {
           Total: [{ $count: "count" }],
-          Rows: [{ $skip: skipRow }, { $limit: perPage }]
+          Rows: [
+            { $skip: skipRow },
+            { $limit: perPage },
+            {
+              $project: {
+                CustomerName: 1,
+                Phone: 1,
+                CustomerEmail: 1,
+                UserEmail: 1,
+                Category: 1,
+                FacultyName: "$FacultyData.Name",
+                DepartmentName: "$DepartmentData.Name",
+                SectionName: "$SectionData.Name"
+              }
+            }
+          ]
         }
       }
     ]);
 
-    // Ensure Total is always an array with count 0 if empty
     if (data.length > 0 && !data[0].Total.length) {
       data[0].Total.push({ count: 0 });
     }

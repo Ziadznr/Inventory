@@ -4,7 +4,12 @@ const CustomersSchema = mongoose.Schema({
     CustomerName: { type: String, required: true },
     Phone: { type: String, required: true },
     UserEmail: { type: String },
-    Address: { type: String },
+    CustomerEmail: { 
+        type: String, 
+        required: true, 
+        unique: true, 
+        match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address'] 
+    },
 
     // Role of customer
     Category: { 
