@@ -39,7 +39,7 @@ exports.ExpenseTypesDetailsByID=async(req,res)=>{
 exports.DeleteExpenseType = async (req, res) => {
     let DeleteID = req.params.id;
   let ObjectId=mongoose.Types.ObjectId;
-  let CheckAssociate = await CheckAssociationService({TypeID: ObjectId(DeleteID)}, ExpensesModel);
+  let CheckAssociate = await CheckAssociationService({TypeID:new ObjectId(DeleteID)}, ExpensesModel);
   if (CheckAssociate) {
     return res.status(400).json({ message: "This Brand is associated with Products, cannot be deleted." });
   }else {

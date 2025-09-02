@@ -7,14 +7,14 @@
 body {
   background: var(--bs-gray-100);
   font-size: 14px;
-  font-family: 'Poppins', sans-serif !important;
+  font-family: 'Inter', sans-serif !important;
 }
 h1, h2, h3, h4, h5, h6,p,b,i ,label,button, input, textarea,span {
-  font-family: 'Poppins', sans-serif !important;
+  font-family: 'Inter', sans-serif !important;
   font-weight: 400;
 }
 a {
-  font-family: 'Poppins', sans-serif !important;
+  font-family: 'Inter', sans-serif !important;
   cursor: pointer !important;
 }
 .border-radius-0 {

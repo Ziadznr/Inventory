@@ -13,125 +13,117 @@ import { BaseURL } from "../helper/config";
 
 const AxiosHeader = { headers: { token: getToken() } };
 
-
 // ------------------ Purchase List ------------------
 export async function PurchaseListRequest(pageNo, perPage, searchKeyword = "0") {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/PurchasesList/${pageNo}/${perPage}/${searchKeyword}`;
+    const URL = `${BaseURL}/PurchasesList/${pageNo}/${perPage}/${searchKeyword}`;
     const result = await axios.get(URL, AxiosHeader);
-    store.dispatch(HideLoader());
 
     console.log("PurchaseList API result:", result.data);
 
     if (result.status === 200 && result.data.status === "success") {
-      const data = result.data.data?.[0];
-      if (data?.Rows?.length > 0) {
-        store.dispatch(SetPurchaseList(data.Rows));
-        store.dispatch(SetPurchaseListTotal(data.Total?.[0]?.count || 0));
+      const data = result.data.data || [];
+      if (data.length > 0) {
+        store.dispatch(SetPurchaseList(data));
+        store.dispatch(SetPurchaseListTotal(data.length));
       } else {
         store.dispatch(SetPurchaseList([]));
         store.dispatch(SetPurchaseListTotal(0));
         ErrorToast("No Data Found");
       }
     } else {
+      store.dispatch(SetPurchaseList([]));
+      store.dispatch(SetPurchaseListTotal(0));
       ErrorToast("Something Went Wrong");
     }
   } catch (e) {
-    console.log("PurchaseListRequest error:", e);
+    console.error("PurchaseListRequest error:", e);
+    store.dispatch(SetPurchaseList([]));
+    store.dispatch(SetPurchaseListTotal(0));
     ErrorToast("Something Went Wrong");
+  } finally {
     store.dispatch(HideLoader());
   }
 }
-
 
 // ------------------ Product DropDown ------------------
 export async function ProductDropDownRequest() {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/ProductsDropDown`; // ✅ make sure backend route matches
+    const URL = `${BaseURL}/ProductsDropDown`;
     const result = await axios.get(URL, AxiosHeader);
-    store.dispatch(HideLoader());
 
     if (result.status === 200 && result.data.status === "success") {
-      if (result.data.data.length > 0) {
-        store.dispatch(SetProductDropDown(result.data.data));
-      } else {
-        store.dispatch(SetProductDropDown([]));
-        ErrorToast("No Product Found");
-      }
+      const products = result.data.data || [];
+      store.dispatch(SetProductDropDown(products));
+      if (products.length === 0) ErrorToast("No Product Found");
+      return products;
     } else {
+      store.dispatch(SetProductDropDown([]));
       ErrorToast("Something Went Wrong");
+      return [];
     }
   } catch (e) {
-    console.log("ProductDropDownRequest error:", e);
+    console.error("ProductDropDownRequest error:", e);
+    store.dispatch(SetProductDropDown([]));
     ErrorToast("Something Went Wrong");
+    return [];
+  } finally {
     store.dispatch(HideLoader());
   }
 }
-
 
 // ------------------ Supplier DropDown ------------------
 export async function SupplierDropDownRequest() {
   try {
     store.dispatch(ShowLoader());
-    let URL = `${BaseURL}/SuppliersDropDown`;
+    const URL = `${BaseURL}/SuppliersDropDown`;
     const result = await axios.get(URL, AxiosHeader);
-    store.dispatch(HideLoader());
 
     if (result.status === 200 && result.data.status === "success") {
-      if (result.data.data.length > 0) {
-        store.dispatch(SetSupplierDropDown(result.data.data));
-      } else {
-        store.dispatch(SetSupplierDropDown([]));
-        ErrorToast("No Supplier Found");
-      }
+      const suppliers = result.data.data || [];
+      store.dispatch(SetSupplierDropDown(suppliers));
+      if (suppliers.length === 0) ErrorToast("No Supplier Found");
+      return suppliers;
     } else {
+      store.dispatch(SetSupplierDropDown([]));
       ErrorToast("Something Went Wrong");
+      return [];
     }
   } catch (e) {
-    console.log("SupplierDropDownRequest error:", e);
+    console.error("SupplierDropDownRequest error:", e);
+    store.dispatch(SetSupplierDropDown([]));
     ErrorToast("Something Went Wrong");
+    return [];
+  } finally {
     store.dispatch(HideLoader());
   }
 }
 
-
 // ------------------ Create Purchase ------------------
 export async function CreatePurchaseRequest(ParentBody, ChildsBody) {
-    try {
-        store.dispatch(ShowLoader());
-        let PostBody = { Parent: ParentBody, Childs: ChildsBody };
-        let URL = BaseURL + "/CreatePurchases";
-        const result = await axios.post(URL, PostBody, AxiosHeader);
-        store.dispatch(HideLoader());
+  try {
+    store.dispatch(ShowLoader());
+    const PostBody = { Parent: ParentBody, Childs: ChildsBody };
+    const URL = `${BaseURL}/CreatePurchases`;
+    const result = await axios.post(URL, PostBody, AxiosHeader);
 
-        console.log("CreatePurchaseRequest API response:", result.data);  // 👈 Always log full response
+    console.log("CreatePurchaseRequest API response:", result.data);
 
-        if (result.status === 200) {
-            if (result.data['status'] === "success") {
-                console.log("✅ Purchase created successfully!");
-                return true;
-            } else {
-                // 👀 Log exact fail reason from backend
-                console.error("❌ Purchase failed:", result.data);
-                return false;
-            }
-        } else {
-            console.error("❌ Unexpected response status:", result.status, result.data);
-            return false;
-        }
-    } catch (e) {
-        store.dispatch(HideLoader());
-        // 👀 Log backend or network error in detail
-        if (e.response) {
-            console.error("❌ Server error:", e.response.status, e.response.data);
-        } else {
-            console.error("❌ Network/Unknown error:", e.message);
-        }
-        return false;
+    if (result.status === 200 && result.data.status === "success") {
+      SuccessToast("Purchase Created Successfully");
+      return true;
+    } else {
+      console.error("CreatePurchaseRequest failed:", result.data);
+      ErrorToast(result.data.message || "Purchase creation failed");
+      return false;
     }
+  } catch (e) {
+    console.error("CreatePurchaseRequest error:", e.response || e.message);
+    ErrorToast("Something Went Wrong");
+    return false;
+  } finally {
+    store.dispatch(HideLoader());
+  }
 }
-
-
-

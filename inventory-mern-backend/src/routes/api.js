@@ -139,7 +139,7 @@ router.get("/SalesSummary",AuthVerifyMiddleware,SalesController.SaleSummery)
 
 // Returns  
 router.post("/CreateReturns",AuthVerifyMiddleware,ReturnsController.CreateReturns)
-router.get("/ReturnsList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,ReturnsController.ReturnsList)
+router.get("/ReturnsList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,ReturnsController.ReturnList)
 router.get("/ReturnsDelete/:id",AuthVerifyMiddleware,ReturnsController.ReturnsDelete)
 router.post("/ReturnByDate",AuthVerifyMiddleware,ReturnsController.ReturnByDate)
 router.get("/ReturnSummary",AuthVerifyMiddleware,ReturnsController.ReturnSummery)

@@ -119,9 +119,9 @@ exports.DeleteProduct = async (req, res) => {
   let DeleteID = req.params.id;
   let ObjectId=mongoose.Types.ObjectId;
 
-  let CheckReturnAssociate = await CheckAssociationService({ProductID: ObjectId(DeleteID)}, ReturnProductsModel);
-  let CheckSaleAssociate = await CheckAssociationService({ProductID: ObjectId(DeleteID)}, SalesProductsModel);
-  let CheckPurchaseAssociate = await CheckAssociationService({ProductID: ObjectId(DeleteID)}, PurchasesProductsModel);
+  let CheckReturnAssociate = await CheckAssociationService({ProductID:new ObjectId(DeleteID)}, ReturnProductsModel);
+  let CheckSaleAssociate = await CheckAssociationService({ProductID:new ObjectId(DeleteID)}, SalesProductsModel);
+  let CheckPurchaseAssociate = await CheckAssociationService({ProductID:new ObjectId(DeleteID)}, PurchasesProductsModel);
 
   if (CheckReturnAssociate) {
     return res.status(400).json({ message: "This Product is associated with Return Products, cannot be deleted." });

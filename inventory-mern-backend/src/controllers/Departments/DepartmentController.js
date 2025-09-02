@@ -105,7 +105,6 @@ exports.DeleteDepartment = async (req, res) => {
 };
 
 // ------------------ Department Dropdown (with optional faculty filter) ------------------
-// controllers/DepartmentsController.js
 
 exports.DepartmentDropdown = async (req, res) => {
   try {

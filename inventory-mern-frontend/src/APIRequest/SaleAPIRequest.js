@@ -19,42 +19,31 @@ export async function SaleListRequest(pageNo, perPage, searchKeyword) {
     store.dispatch(ShowLoader());
 
     const URL = `${BaseURL}/SalesList/${pageNo}/${perPage}/${searchKeyword || "0"}`;
-    console.log("SaleListRequest URL:", URL);
+    console.log("📌 SaleListRequest URL:", URL);
 
     const result = await axios.get(URL, AxiosHeader);
-    console.log("Raw result from API:", result.data);
+    console.log("📌 Raw result from API:", result.data);
 
     if (result.status === 200 && result.data?.status === "success") {
-      // Use data directly
       const rows = result.data?.data || [];
-      console.log("Rows from API:", rows);
+      const total = result.data?.total || rows.length; // ✅ backend may provide total
 
-      // Map each sale to include CustomerData with string names
-      const mappedRows = rows.map(sale => {
-        const customer = sale.customers?.[0] || {};
-        return {
-          ...sale,
-          CustomerData: {
-            CustomerName: customer.CustomerName || "-",
-            Category: customer.Category || "-",
-            FacultyName: sale.faculty?.[0]?.Name || "-",
-            DepartmentName: sale.department?.[0]?.Name || "-",
-            SectionName: sale.section?.[0]?.Name || "-"
-          }
-        };
-      });
+      console.log("📌 Final rows for Redux:", rows);
 
-      store.dispatch(SetSaleList(mappedRows));
-      store.dispatch(SetSaleListTotal(mappedRows.length)); // Or use a proper total from backend
+      // ✅ Save directly to Redux
+      store.dispatch(SetSaleList(rows));
+      store.dispatch(SetSaleListTotal(total));
 
-      if (mappedRows.length === 0) ErrorToast("No Data Found");
+      if (rows.length === 0) ErrorToast("No Data Found");
     } else {
       store.dispatch(SetSaleList([]));
       store.dispatch(SetSaleListTotal(0));
       ErrorToast("Something Went Wrong");
     }
   } catch (e) {
-    console.error("SaleListRequest Error:", e);
+    console.error("❌ SaleListRequest Error:", e);
+    store.dispatch(SetSaleList([]));
+    store.dispatch(SetSaleListTotal(0));
     ErrorToast("Something Went Wrong");
   } finally {
     store.dispatch(HideLoader());

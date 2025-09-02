@@ -58,6 +58,7 @@ const SalesList = () => {
                         <div className="card">
                             <div className="card-body">
                                 <div className="container-fluid">
+                                    {/* ------- Filters Row ------- */}
                                     <div className="row mb-3">
                                         <div className="col-4"><h5>Sales List</h5></div>
                                         <div className="col-2">
@@ -86,43 +87,88 @@ const SalesList = () => {
                                         </div>
                                     </div>
 
+                                    {/* ------- Sales Table ------- */}
                                     <div className="row">
                                         <div className="col-12">
                                             <div className="table-responsive table-section">
                                                 <table className="table">
-                                                    <thead className="sticky-top bg-white">
-                                                        <tr>
-                                                            <td>Customer Name</td>
-                                                            <td>Category</td>
-                                                            <td>Faculty</td>
-                                                            <td>Department</td>
-                                                            <td>Section</td>
-                                                            <td>Grand Total</td>
-                                                            <td>Other Cost</td>
-                                                            <td>Date</td>
-                                                            <td>Action</td>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
+                                                   <thead className="sticky-top bg-white">
+  <tr>
+    <td>Customer Name</td>
+    <td>Category</td>
+    <td>Faculty</td>
+    <td>Department</td>
+    <td>Section</td>
+    <td>Product</td>
+    <td>Qty</td>
+    <td>Total</td>
+    <td>Other Cost</td>
+    <td>Grand Total</td>
+    <td>Date</td>
+    <td>Action</td>
+  </tr>
+</thead>
+
+<tbody>
   {DataList.length > 0 ? (
     DataList.map((item, i) => {
       const customer = item.CustomerData || {};
-      return (
+      return item.Products && item.Products.length > 0 ? (
+        item.Products.map((p, idx) => (
+          <tr key={`${i}-${idx}`}>
+            <td>{customer.CustomerName || "-"}</td>
+            <td>{customer.Category || "-"}</td>
+            <td>{customer.FacultyName || "-"}</td>
+            <td>{customer.DepartmentName || "-"}</td>
+            <td>{customer.SectionName || "-"}</td>
+            <td>{p.ProductName || "-"}</td>
+            <td>{p.Qty}</td>
+            <td>
+              <CurrencyFormat value={p.Total} displayType={'text'} thousandSeparator prefix={'$'} />
+            </td>
+            {/* only show OtherCost + GrandTotal on first product row */}
+            {idx === 0 ? (
+              <>
+                <td>
+                  <CurrencyFormat value={item.OtherCost} displayType={'text'} thousandSeparator prefix={'$'} />
+                </td>
+                <td>
+                  <CurrencyFormat value={item.GrandTotal} displayType={'text'} thousandSeparator prefix={'$'} />
+                </td>
+                <td>{moment(item.CreatedDate).format('DD-MM-YYYY')}</td>
+                <td>
+                  <button onClick={() => console.log(item)} className="btn btn-outline-light text-success p-2 mb-0 btn-sm ms-2">
+                    <AiOutlineEye size={15} />
+                  </button>
+                </td>
+              </>
+            ) : (
+              <>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </>
+            )}
+          </tr>
+        ))
+      ) : (
         <tr key={i}>
           <td>{customer.CustomerName || "-"}</td>
           <td>{customer.Category || "-"}</td>
           <td>{customer.FacultyName || "-"}</td>
           <td>{customer.DepartmentName || "-"}</td>
           <td>{customer.SectionName || "-"}</td>
-          <td>
-            <CurrencyFormat value={item.GrandTotal} displayType={'text'} thousandSeparator prefix={'$'} />
-          </td>
+          <td colSpan="3" className="text-center text-muted">No Products</td>
           <td>
             <CurrencyFormat value={item.OtherCost} displayType={'text'} thousandSeparator prefix={'$'} />
           </td>
-          <td>{moment(item.CreatedDate).format('MMMM Do YYYY')}</td>
           <td>
-            <button onClick={() => DetailsPopUp(item)} className="btn btn-outline-light text-success p-2 mb-0 btn-sm ms-2">
+            <CurrencyFormat value={item.GrandTotal} displayType={'text'} thousandSeparator prefix={'$'} />
+          </td>
+          <td>{moment(item.CreatedDate).format('DD-MM-YYYY')}</td>
+          <td>
+            <button onClick={() => console.log(item)} className="btn btn-outline-light text-success p-2 mb-0 btn-sm ms-2">
               <AiOutlineEye size={15} />
             </button>
           </td>
@@ -131,36 +177,41 @@ const SalesList = () => {
     })
   ) : (
     <tr>
-      <td colSpan="9" className="text-center text-muted">No data found</td>
+      <td colSpan="12" className="text-center text-muted">No data found</td>
     </tr>
   )}
 </tbody>
+
 
                                                 </table>
                                             </div>
                                         </div>
 
+                                        {/* ------- Pagination ------- */}
                                         <div className="col-12 mt-5">
                                             <nav aria-label="Page navigation example">
-                                                <ReactPaginate
-                                                    previousLabel="<"
-                                                    nextLabel=">"
-                                                    pageClassName="page-item"
-                                                    pageLinkClassName="page-link"
-                                                    previousClassName="page-item"
-                                                    previousLinkClassName="page-link"
-                                                    nextClassName="page-item"
-                                                    nextLinkClassName="page-link"
-                                                    breakLabel="..."
-                                                    breakClassName="page-item"
-                                                    breakLinkClassName="page-link"
-                                                    pageCount={Math.ceil(Total / perPage)}
-                                                    marginPagesDisplayed={2}
-                                                    pageRangeDisplayed={5}
-                                                    onPageChange={handlePageClick}
-                                                    containerClassName="pagination"
-                                                    activeClassName="active"
-                                                />
+<ReactPaginate
+    previousLabel="<"
+    nextLabel=">"
+    breakLabel="..."
+    pageCount={Math.ceil(Total / perPage)}
+    marginPagesDisplayed={2}
+    pageRangeDisplayed={5}
+    onPageChange={handlePageClick}
+    containerClassName="pagination justify-content-center mt-4"
+    pageClassName="page-item"
+    pageLinkClassName="page-link"
+    previousClassName="page-item"
+    previousLinkClassName="page-link"
+    nextClassName="page-item"
+    nextLinkClassName="page-link"
+    breakClassName="page-item disabled"
+    breakLinkClassName="page-link"
+    activeClassName="active"
+    disabledClassName="disabled"
+/>
+
+
                                             </nav>
                                         </div>
                                     </div>

@@ -14,8 +14,6 @@ exports.CreateSales = async (req, res) => {
 exports.SalesList = async (req, res) => {
     try {
         const searchKeyword = req.params.searchKeyword || "";
-        console.log("Search keyword:", searchKeyword);
-
         const SearchRgx = { $regex: searchKeyword, $options: "i" };
 
         // Lookup customers
@@ -58,6 +56,32 @@ exports.SalesList = async (req, res) => {
             }
         };
 
+        // Lookup sales products
+        const JoinSalesProducts = {
+            $lookup: {
+                from: "salesproducts",
+                localField: "_id",
+                foreignField: "SaleID",
+                as: "salesProducts"
+            }
+        };
+
+        // Unwind products
+        const UnwindProducts = { $unwind: { path: "$salesProducts", preserveNullAndEmptyArrays: true } };
+
+        // Lookup product details
+        const JoinProducts = {
+            $lookup: {
+                from: "products",
+                localField: "salesProducts.ProductID",
+                foreignField: "_id",
+                as: "productDetails"
+            }
+        };
+
+        const UnwindProductDetails = { $unwind: { path: "$productDetails", preserveNullAndEmptyArrays: true } };
+
+        // Match search keyword
         const MatchStage = {
             $match: {
                 $or: [
@@ -69,31 +93,65 @@ exports.SalesList = async (req, res) => {
             }
         };
 
+        // Group back by sale
+        const GroupStage = {
+            $group: {
+                _id: "$_id",
+                UserEmail: { $first: "$UserEmail" },
+                CustomerID: { $first: "$CustomerID" },
+                OtherCost: { $first: "$OtherCost" },
+                GrandTotal: { $first: "$GrandTotal" },
+                Note: { $first: "$Note" },
+                CreatedDate: { $first: "$CreatedDate" },
+                customers: { $first: "$customers" },
+                faculty: { $first: "$faculty" },
+                department: { $first: "$department" },
+                section: { $first: "$section" },
+
+                Products: {
+                    $push: {
+                        ProductName: "$productDetails.Name",
+                        Qty: "$salesProducts.Qty",
+                        UnitCost: "$salesProducts.UnitCost",
+                        Total: "$salesProducts.Total"
+                    }
+                }
+            }
+        };
+
         const Result = await ParentModel.aggregate([
             JoinCustomer,
             JoinFaculty,
             JoinDepartment,
             JoinSection,
-            MatchStage
+            JoinSalesProducts,
+            UnwindProducts,
+            JoinProducts,
+            UnwindProductDetails,
+            MatchStage,
+            GroupStage,
+            { $sort: { CreatedDate: -1 } }
         ]);
 
-        console.log("Raw Result from aggregate:", JSON.stringify(Result, null, 2));
-
+        // Map response
         const Data = Result.map(sale => {
             const customer = sale.customers?.[0] || {};
             return {
-                ...sale,
+                _id: sale._id,
+                OtherCost: sale.OtherCost,
+                GrandTotal: sale.GrandTotal,
+                Note: sale.Note,
+                CreatedDate: sale.CreatedDate,
                 CustomerData: {
                     CustomerName: customer.CustomerName || "-",
                     Category: customer.Category || "-",
                     FacultyName: sale.faculty?.[0]?.Name || "-",
                     DepartmentName: sale.department?.[0]?.Name || "-",
                     SectionName: sale.section?.[0]?.Name || "-"
-                }
+                },
+                Products: sale.Products.filter(p => p.ProductName) // remove nulls
             };
         });
-
-        console.log("Mapped Data:", JSON.stringify(Data, null, 2));
 
         res.status(200).json({ status: "success", data: Data });
     } catch (error) {
@@ -101,6 +159,7 @@ exports.SalesList = async (req, res) => {
         res.status(500).json({ status: "error", message: error.toString() });
     }
 };
+
 
 
 exports.SalesDelete = async (req, res) => {
