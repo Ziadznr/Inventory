@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { AiOutlineEye } from "react-icons/ai";
 import ReactPaginate from "react-paginate";
 import moment from "moment";
-import CurrencyFormat from "react-currency-format";
+import { NumericFormat as CurrencyFormat } from "react-number-format";
 
 const PurchaseList = () => {
   const [searchKeyword, setSearchKeyword] = useState("0");
@@ -41,6 +41,11 @@ const PurchaseList = () => {
   const DetailsPopUp = (item) => {
     console.log("Details clicked for:", item);
   };
+
+  // Sort the data by CreatedDate (newest first)
+  const sortedData = [...DataList].sort(
+    (a, b) => new Date(b.CreatedDate) - new Date(a.CreatedDate)
+  );
 
   return (
     <Fragment>
@@ -121,8 +126,8 @@ const PurchaseList = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {DataList.length > 0 ? (
-                          DataList.map((item, index) =>
+                        {sortedData.length > 0 ? (
+                          sortedData.map((item, index) =>
                             item.Products.map((product, pIndex) => (
                               <tr key={item._id + "_" + pIndex}>
                                 {pIndex === 0 && (
@@ -217,7 +222,7 @@ const PurchaseList = () => {
                       marginPagesDisplayed={2}
                       pageRangeDisplayed={5}
                       onPageChange={handlePageClick}
-                      containerClassName="pagination"
+                      containerClassName="pagination justify-content-center"
                       pageClassName="page-item"
                       pageLinkClassName="page-link"
                       previousClassName="page-item"
@@ -225,9 +230,10 @@ const PurchaseList = () => {
                       nextClassName="page-item"
                       nextLinkClassName="page-link"
                       breakLabel="..."
-                      breakClassName="page-item"
+                      breakClassName="page-item disabled"
                       breakLinkClassName="page-link"
                       activeClassName="active"
+                      disabledClassName="disabled"
                     />
                   </div>
                 </div>

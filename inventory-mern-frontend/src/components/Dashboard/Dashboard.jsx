@@ -19,7 +19,7 @@ import {
   Cell,
 } from "recharts";
 import { useSelector } from "react-redux";
-import CurrencyFormat from "react-currency-format";
+import { NumericFormat as CurrencyFormat } from "react-number-format";
 import store from "../../redux/store/store";
 import { ShowLoader, HideLoader } from "../../redux/state-slice/settings-slice";
 

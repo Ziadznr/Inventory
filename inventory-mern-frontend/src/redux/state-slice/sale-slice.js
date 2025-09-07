@@ -1,53 +1,64 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 export const saleSlice = createSlice({
-    name: 'sale',
-    initialState: {
-        List: [],
-        ListTotal: 0,
-        CustomerDropDown: [],
-        ProductDropDown: [],
-        SaleFormValue: {
-            CustomerID: '',
-            OtherCost: '',
-            GrandTotal: '',
-            Note: ''
-        },
-        SaleItemList: []
+  name: 'sale',
+  initialState: {
+    List: [],                   // All sales list
+    ListTotal: 0,               // Total count of sales
+    CustomerDropDown: [],       // Customer dropdown options
+    ProductDropDown: [],        // Product dropdown options
+    SaleFormValue: {
+      CustomerID: '',           // Hidden from UI, used internally
+      OtherCost: '',            // Additional cost
+      GrandTotal: '',           // Calculated total
+      Note: ''                  // Optional note
     },
-    reducers: {
-        SetSaleList: (state, action) => {
-            state.List = action.payload;
-        },
-        SetSaleListTotal: (state, action) => {
-            state.ListTotal = action.payload;
-        },
-        SetCustomerDropDown: (state, action) => {
-            state.CustomerDropDown = action.payload;
-        },
-        SetProductDropDown: (state, action) => {
-            state.ProductDropDown = action.payload;
-        },
-        OnChangeSaleInput: (state, action) => {
-            state.SaleFormValue[action.payload.Name] = action.payload.Value;
-        },
-        SetSaleItemList: (state, action) => {
-            state.SaleItemList.push(action.payload);
-        },
-        RemoveSaleItem: (state, action) => {
-            state.SaleItemList.splice(action.payload, 1);
-        },
+    SaleItemList: []            // Items added to cart
+  },
+  reducers: {
+    SetSaleList: (state, action) => {
+      state.List = action.payload;
+    },
+    SetSaleListTotal: (state, action) => {
+      state.ListTotal = action.payload;
+    },
+    SetCustomerDropDown: (state, action) => {
+      state.CustomerDropDown = action.payload;
+    },
+    SetProductDropDown: (state, action) => {
+      state.ProductDropDown = action.payload;
+    },
+    OnChangeSaleInput: (state, action) => {
+      // Update a field in SaleFormValue dynamically
+      const { Name, Value } = action.payload;
+      state.SaleFormValue[Name] = Value;
+    },
+    SetSaleItemList: (state, action) => {
+      // Add a product to the cart
+      state.SaleItemList.push(action.payload);
+    },
+    RemoveSaleItem: (state, action) => {
+      // Remove a product from the cart by index
+      state.SaleItemList.splice(action.payload, 1);
+    },
+    ClearSaleForm: (state) => {
+      // Optional: reset sale form values
+      state.SaleFormValue = { CustomerID: '', OtherCost: '', GrandTotal: '', Note: '' };
+      state.SaleItemList = [];
     }
+  }
 });
 
+// Export actions for use in components
 export const {
-    RemoveSaleItem,
-    SetSaleList,
-    SetProductDropDown,
-    SetSaleItemList,
-    SetCustomerDropDown,
-    SetSaleListTotal,
-    OnChangeSaleInput
+  RemoveSaleItem,
+  SetSaleList,
+  SetProductDropDown,
+  SetSaleItemList,
+  SetCustomerDropDown,
+  SetSaleListTotal,
+  OnChangeSaleInput,
+  ClearSaleForm
 } = saleSlice.actions;
 
 export default saleSlice.reducer;

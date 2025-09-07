@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GetProfileDetails, ProfileUpdateRequest } from "../../APIRequest/UsersAPIRequest";
 import { useSelector } from "react-redux";
 import { ErrorToast, getBase64, IsEmail, IsEmpty, IsMobile } from "../../helper/FormHelper";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
+    const [loading, setLoading] = useState(true);
 
     const emailRef = useRef(null);
     const firstNameRef = useRef(null);
@@ -16,12 +17,13 @@ const Profile = () => {
 
     useEffect(() => {
         (async () => {
+            setLoading(true);
             await GetProfileDetails();
+            setLoading(false);
         })();
     }, []);
 
     const ProfileData = useSelector((state) => state.profile.value);
-
     const navigate = useNavigate();
 
     const PreviewImage = () => {
@@ -59,6 +61,16 @@ const Profile = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: "70vh" }}>
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container">
             <div className="row d-flex justify-content-center">
@@ -69,7 +81,7 @@ const Profile = () => {
                                 <img
                                     ref={userImgView}
                                     className="icon-nav-img-lg"
-                                    src={ProfileData['photo']}
+                                    src={ProfileData?.photo}
                                     alt="Profile"
                                 />
                                 <hr />
@@ -86,7 +98,7 @@ const Profile = () => {
                                     <div className="col-4 p-2">
                                         <label>Email Address</label>
                                         <input
-                                            defaultValue={ProfileData['email']}
+                                            defaultValue={ProfileData?.email}
                                             readOnly={true}
                                             ref={emailRef}
                                             className="form-control animated fadeInUp"
@@ -96,7 +108,7 @@ const Profile = () => {
                                     <div className="col-4 p-2">
                                         <label>First Name</label>
                                         <input
-                                            defaultValue={ProfileData['firstName']}
+                                            defaultValue={ProfileData?.firstName}
                                             ref={firstNameRef}
                                             className="form-control animated fadeInUp"
                                             type="text"
@@ -105,7 +117,7 @@ const Profile = () => {
                                     <div className="col-4 p-2">
                                         <label>Last Name</label>
                                         <input
-                                            defaultValue={ProfileData['lastName']}
+                                            defaultValue={ProfileData?.lastName}
                                             ref={lastNameRef}
                                             className="form-control animated fadeInUp"
                                             type="text"
@@ -114,7 +126,7 @@ const Profile = () => {
                                     <div className="col-4 p-2">
                                         <label>Mobile</label>
                                         <input
-                                            defaultValue={ProfileData['mobile']}
+                                            defaultValue={ProfileData?.mobile}
                                             ref={mobileRef}
                                             className="form-control animated fadeInUp"
                                             type="tel"
@@ -123,7 +135,7 @@ const Profile = () => {
                                     <div className="col-4 p-2">
                                         <label>Password</label>
                                         <input
-                                            defaultValue={ProfileData['password']}
+                                            defaultValue={ProfileData?.password}
                                             ref={passwordRef}
                                             className="form-control animated fadeInUp"
                                             type="password"

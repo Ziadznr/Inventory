@@ -1,4 +1,4 @@
-// src/components/Faculty/FacultyList.jsx
+// src/components/Faculties/FacultyList.jsx
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { FacultyListRequest, DeleteFacultyRequest } from "../../APIRequest/FacultyAPIRequest";
@@ -8,28 +8,32 @@ import ReactPaginate from "react-paginate";
 import moment from "moment";
 import { DeleteAlert } from "../../helper/DeleteAlert";
 
-const FacultyList = () => {
+const FacultyList = ({ refreshFlag }) => {
   const [searchKeyword, setSearchKeyword] = useState("0");
   const [perPage, setPerPage] = useState(20);
+  const [pageNo, setPageNo] = useState(1);
 
-  const DataList = useSelector((state) => state.faculty.List);
-  const Total = useSelector((state) => state.faculty.ListTotal);
+  const DataList = useSelector((state) => state.faculty.List || []);
+  const Total = useSelector((state) => state.faculty.ListTotal || 0);
 
-  // Initial fetch
+  // Fetch list whenever dependencies change
   useEffect(() => {
     const fetchData = async () => {
-      await FacultyListRequest(1, perPage, searchKeyword || "0");
+      await FacultyListRequest(pageNo, perPage, searchKeyword || "0");
     };
     fetchData();
-  }, []);
+  }, [pageNo, perPage, searchKeyword, refreshFlag]);
 
-  // Pagination
+  // Pagination handler
   const handlePageClick = async (event) => {
-    await FacultyListRequest(event.selected + 1, perPage, searchKeyword || "0");
+    const selectedPage = event.selected + 1;
+    setPageNo(selectedPage);
+    await FacultyListRequest(selectedPage, perPage, searchKeyword || "0");
   };
 
   // Search button
   const searchData = async () => {
+    setPageNo(1);
     await FacultyListRequest(1, perPage, searchKeyword || "0");
   };
 
@@ -37,6 +41,7 @@ const FacultyList = () => {
   const perPageOnChange = async (e) => {
     const newPerPage = parseInt(e.target.value);
     setPerPage(newPerPage);
+    setPageNo(1);
     await FacultyListRequest(1, newPerPage, searchKeyword || "0");
   };
 
@@ -52,6 +57,7 @@ const FacultyList = () => {
     if (Result.isConfirmed) {
       const DeleteResult = await DeleteFacultyRequest(id);
       if (DeleteResult) {
+        // Refresh list after deletion
         await FacultyListRequest(1, perPage, searchKeyword || "0");
       }
     }
@@ -100,7 +106,7 @@ const FacultyList = () => {
 
               {/* Table */}
               <div className="table-responsive table-section">
-                <table className="table">
+                <table className="table table-striped table-bordered">
                   <thead className="sticky-top bg-white">
                     <tr>
                       <td>No</td>
@@ -113,7 +119,7 @@ const FacultyList = () => {
                     {DataList.length > 0 ? (
                       DataList.map((item, i) => (
                         <tr key={item._id}>
-                          <td>{i + 1}</td>
+                          <td>{(pageNo - 1) * perPage + i + 1}</td>
                           <td>{item.Name}</td>
                           <td>{moment(item.CreatedDate).format("MMMM Do YYYY")}</td>
                           <td>
@@ -161,7 +167,7 @@ const FacultyList = () => {
                   marginPagesDisplayed={2}
                   pageRangeDisplayed={5}
                   onPageChange={handlePageClick}
-                  containerClassName="pagination"
+                  containerClassName="pagination justify-content-center"
                   activeClassName="active"
                 />
               </div>

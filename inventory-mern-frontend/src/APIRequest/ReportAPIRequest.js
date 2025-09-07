@@ -29,25 +29,33 @@ export async function ExpensesByDateRequest(FormData,ToDate) {
     }
 }
 
-export async function SalesByDateRequest(FormData,ToDate) {
-    try {
-        store.dispatch(ShowLoader())
-        let PostBody={"FormDate":FormData+"T00:00:00.000+00:00","ToDate":ToDate+"T00:00:00.000+00:00"}
-        let URL = BaseURL+"/SalesByDate";
-        const result = await axios.post(URL,PostBody,AxiosHeader);
-        store.dispatch(HideLoader());
-        if (result.status === 200 && result.data['status']==="success") {
-            store.dispatch(SetSalesByDateList(result.data['data']))
+export async function SalesByDateRequest(FromDate, ToDate) {
+  try {
+    store.dispatch(ShowLoader());
 
-        } else {
-            ErrorToast("Something Went Wrong")
-        }
+    // Ensure correct property names + proper ISO format
+    let PostBody = {
+      FromDate: FromDate + "T00:00:00.000Z", 
+      ToDate: ToDate + "T23:59:59.999Z" // include the full day
+    };
+
+    let URL = BaseURL + "/SalesByDate";
+    const result = await axios.post(URL, PostBody, AxiosHeader);
+
+    store.dispatch(HideLoader());
+
+    if (result.status === 200 && result.data?.status === "success") {
+      store.dispatch(SetSalesByDateList(result.data.data));
+    } else {
+      ErrorToast(result.data?.message || "Something Went Wrong");
     }
-    catch (e) {
-        ErrorToast("Something Went Wrong")
-        store.dispatch(HideLoader())
-    }
+  } catch (e) {
+    console.error("SalesByDateRequest Error:", e);
+    ErrorToast("Something Went Wrong");
+    store.dispatch(HideLoader());
+  }
 }
+
 
 export async function PurchaseByDateRequest(FormData,ToDate) {
     try {

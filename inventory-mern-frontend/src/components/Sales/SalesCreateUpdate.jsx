@@ -15,7 +15,7 @@ import {
   SectionDropdownRequest
 } from "../../APIRequest/SaleAPIRequest";
 import { BsCartCheck, BsTrash } from "react-icons/bs";
-import { ErrorToast, IsEmpty } from "../../helper/FormHelper";
+import { SuccessToast,ErrorToast, IsEmpty } from "../../helper/FormHelper";
 
 const SalesCreateUpdate = () => {
   const [facultyList, setFacultyList] = useState([]);
@@ -32,6 +32,8 @@ const SalesCreateUpdate = () => {
   const productRef = useRef();
   const qtyRef = useRef();
   const unitPriceRef = useRef();
+
+  
 
   // ---------------- Helper: Calculate Grand Total ----------------
   const calculateGrandTotal = (items, otherCost) => {
@@ -168,12 +170,15 @@ const SalesCreateUpdate = () => {
     }));
   };
 
-  // ---------------- Create Sale ----------------
-  const CreateNewSale = async () => {
-    if (!SaleFormValue.CustomerID) return ErrorToast("Select Customer");
-    const res = await CreateSaleRequest(SaleFormValue, SaleItemList);
-    if (res) alert("Sale Created Successfully");
-  };
+ // ---------------- Create Sale ----------------
+const CreateNewSale = async () => { if (!SaleFormValue.CustomerID) 
+  
+return ErrorToast("Select Customer"); 
+const res = await CreateSaleRequest(SaleFormValue, SaleItemList); 
+if (res) { alert("Sale Created Successfully"); 
+  console.log("Sale created, email sent from backend (check backend console)."); } };
+
+
 
   return (
     <Fragment>

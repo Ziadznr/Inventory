@@ -20,29 +20,32 @@ const getAxiosHeader = () => {
 };
 
 export async function LoginRequest(email, password) {
-  try {
-    store.dispatch(ShowLoader());
+    try {
+        store.dispatch(ShowLoader());
 
-    let URL = BaseURL + "/Login";
+        const res = await axios.post(`${BaseURL}/Login`, { email, password });
 
-    let PostBody = { email: email, password: password };
+        store.dispatch(HideLoader());
 
-    let res = await axios.post(URL, PostBody);
+        if (res.status === 200) {
+            const userData = res.data["data"];
+            setToken(res.data["token"]);
+            setUserDetails(userData);
 
-    setToken(res.data["token"]);
+            // ✅ Update Redux profile immediately
+            store.dispatch(SetProfile(userData));
 
-    setUserDetails(res.data["data"]);
-
-    SuccessToast("Login Success");
-
-    store.dispatch(HideLoader());
-
-    return true;
-  } catch (e) {
-    store.dispatch(HideLoader());
-    ErrorToast("Invalid Email or Password");
-    return false;
-  }
+            SuccessToast("Login Success");
+            return true;
+        } else {
+            ErrorToast("Invalid Email or Password");
+            return false;
+        }
+    } catch (e) {
+        store.dispatch(HideLoader());
+        ErrorToast("Invalid Email or Password");
+        return false;
+    }
 }
 
 export async function RegistrationRequest(email, firstName, lastName, mobile, password, photo) {

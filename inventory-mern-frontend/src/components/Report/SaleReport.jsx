@@ -4,7 +4,7 @@ import {ErrorToast, IsEmpty} from "../../helper/FormHelper";
 import {SalesByDateRequest} from "../../APIRequest/ReportAPIRequest";
 import exportFromJSON from "export-from-json";
 import moment from "moment/moment";
-import CurrencyFormat from "react-currency-format";
+import { NumericFormat as CurrencyFormat } from "react-number-format";
 
 const SaleReport = () => {
     let formRef,toRef=useRef();

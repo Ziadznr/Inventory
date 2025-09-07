@@ -4,7 +4,7 @@ import {useSelector} from "react-redux";
 import {Link} from "react-router-dom";
 import {AiOutlineDelete, AiOutlineEdit} from "react-icons/ai";
 import ReactPaginate from "react-paginate";
-import CurrencyFormat from "react-currency-format";
+import { NumericFormat as CurrencyFormat } from "react-number-format";
 import {DeleteAlert} from "../../helper/DeleteAlert";
 import {BrandListRequest, DeleteBrandRequest} from "../../APIRequest/BrandAPIRequest";
 

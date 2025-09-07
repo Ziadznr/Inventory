@@ -4,7 +4,7 @@ import {ErrorToast, IsEmpty} from "../../helper/FormHelper";
 import {PurchaseByDateRequest} from "../../APIRequest/ReportAPIRequest";
 import moment from "moment/moment";
 import exportFromJSON from "export-from-json";
-import CurrencyFormat from "react-currency-format";
+import { NumericFormat as CurrencyFormat } from "react-number-format";
 
 const PurchaseReport = () => {
 
