@@ -1,9 +1,9 @@
 import React, { Fragment, useRef } from "react";
 import { ErrorToast, IsEmail } from "../../helper/FormHelper";
-import { ChairmanRecoverVerifyEmailRequest } from "../../APIRequest/ChairmansAPIRequest";
+import { CustomerRecoverVerifyEmailRequest } from "../../APIRequest/CustomerAPIRequest";
 import { useNavigate } from "react-router-dom";
 
-const ChairmanSendOTP = () => {
+const CustomerSendOTP = () => {
   const emailRef = useRef(null);
   const navigate = useNavigate();
 
@@ -15,9 +15,9 @@ const ChairmanSendOTP = () => {
       return;
     }
 
-    let result = await ChairmanRecoverVerifyEmailRequest(email);
+    let result = await CustomerRecoverVerifyEmailRequest(email);
     if (result === true) {
-      navigate("/ChairmanVerifyOTP"); // Redirect to Chairman OTP verification page
+      navigate("/CustomerVerifyOTP"); // Redirect to Customer OTP verification page
     }
   };
 
@@ -34,7 +34,7 @@ const ChairmanSendOTP = () => {
                 <input
                   id="emailInput"
                   ref={emailRef}
-                  placeholder="Chairman Email"
+                  placeholder="Customer Email"
                   className="form-control animated fadeInUp"
                   type="email"
                 />
@@ -54,4 +54,4 @@ const ChairmanSendOTP = () => {
   );
 };
 
-export default ChairmanSendOTP;
+export default CustomerSendOTP;

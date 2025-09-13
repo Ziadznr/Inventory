@@ -1,11 +1,11 @@
 import React, { Fragment, useState } from "react";
 import ReactCodeInput from "react-code-input";
 import { ErrorToast } from "../../helper/FormHelper";
-import { ChairmanRecoverVerifyOTPRequest } from "../../APIRequest/ChairmansAPIRequest";
+import { CustomerRecoverVerifyOTPRequest } from "../../APIRequest/CustomerAPIRequest";
 import { getEmail } from "../../helper/SessionHelper";
 import { useNavigate } from "react-router-dom";
 
-const ChairmanVerifyOTP = () => {
+const CustomerVerifyOTP = () => {
   const navigate = useNavigate();
 
   const defaultInputStyle = {
@@ -28,9 +28,9 @@ const ChairmanVerifyOTP = () => {
 
   const SubmitOTP = async () => {
     if (OTP.length === 6) {
-      let result = await ChairmanRecoverVerifyOTPRequest(getEmail(), OTP);
+      let result = await CustomerRecoverVerifyOTPRequest(getEmail(), OTP);
       if (result === true) {
-        navigate("/ChairmanCreatePassword"); // Redirect to chairman password creation
+        navigate("/CustomerCreatePassword"); // Redirect to customer password creation
       }
     } else {
       ErrorToast("Enter 6 Digit Code");
@@ -66,4 +66,4 @@ const ChairmanVerifyOTP = () => {
   );
 };
 
-export default ChairmanVerifyOTP;
+export default CustomerVerifyOTP;

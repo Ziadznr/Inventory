@@ -4,7 +4,7 @@ const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const AuthVerifyMiddleware=require('../middlewares/AuthVerifyMiddleware.js')
 const UsersController=require('../controllers/Users/UsersController')
-const ChairmansController=require('../controllers/Chairmans/ChairmansController.js')
+// const ChairmansController=require('../controllers/Chairmans/ChairmansController.js')
 const BrandsController=require('../controllers/Brands/BrandsController.js')
 const CategoriesController=require('../controllers/Categories/CategoriesController.js')
 const CustomersController=require('../controllers/Customers/CustomersController.js')    
@@ -18,6 +18,8 @@ const ReturnsController=require('../controllers/Returns/ReturnsController.js')
 const DepartmentController = require('../controllers/Departments/DepartmentController');
 const FacultyController = require('../controllers/Faculties/FacultyController');
 const SectionController = require('../controllers/Sections/SectionController');
+const CustomerCreateUpdateController = require('../controllers/Customers/CustomerCreateUpdateController.js');
+const CustomersProductEntryController = require('../controllers/Customers/CustomersProductEntryController.js');
 
 const router=express.Router();
 
@@ -30,15 +32,15 @@ router.get("/RecoverVerifyEmail/:email",UsersController.RecoverVerifyEmail)
 router.get("/RecoverVerifyOTP/:email/:otp",UsersController.RecoverVerifyOTP)
 router.post("/RecoverResetPass",UsersController.RecoverResetPass)
 
-// Chairmans Profile
-router.post("/ChairmanRegistration",ChairmansController.ChairmanRegistration)
-router.post("/ChairmanLogin",ChairmansController.ChairmanLogin)
-router.post("/ChairmanProfileUpdate",AuthVerifyMiddleware,ChairmansController.ChairmanProfileUpdate)
-router.get("/ChairmanProfileDetails",AuthVerifyMiddleware,ChairmansController.ChairmanProfileDetails)
-router.get("/ChairmanRecoverVerifyEmail/:email",ChairmansController.ChairmanRecoverVerifyEmail)
-router.get("/ChairmanRecoverVerifyOTP/:email/:otp",ChairmansController.ChairmanRecoverVerifyOTP)
-router.post("/ChairmanRecoverResetPass",ChairmansController.ChairmanRecoverResetPass)
-router.get("/PublicDepartments", ChairmansController.PublicDepartments);
+
+// router.post("/ChairmanRegistration",ChairmansController.ChairmanRegistration)
+// router.post("/ChairmanLogin",ChairmansController.ChairmanLogin)
+// router.post("/ChairmanProfileUpdate",AuthVerifyMiddleware,ChairmansController.ChairmanProfileUpdate)
+// router.get("/ChairmanProfileDetails",AuthVerifyMiddleware,ChairmansController.ChairmanProfileDetails)
+// router.get("/ChairmanRecoverVerifyEmail/:email",ChairmansController.ChairmanRecoverVerifyEmail)
+// router.get("/ChairmanRecoverVerifyOTP/:email/:otp",ChairmansController.ChairmanRecoverVerifyOTP)
+// router.post("/ChairmanRecoverResetPass",ChairmansController.ChairmanRecoverResetPass)
+// router.get("/PublicDepartments", ChairmansController.PublicDepartments);
 
 
 // Brands
@@ -61,7 +63,7 @@ router.get("/CategoriesDetailsByID/:id",AuthVerifyMiddleware,CategoriesControlle
 router.post('/CreateFaculty', AuthVerifyMiddleware,FacultyController.CreateFaculty);
 router.get('/FacultyList/:pageNo/:perPage/:searchKeyword', AuthVerifyMiddleware,FacultyController.ListFaculties);
 router.delete('/DeleteFaculty/:id', AuthVerifyMiddleware,FacultyController.DeleteFaculty);
-router.get('/FacultyDropdown', AuthVerifyMiddleware,FacultyController.FacultyDropdown);
+router.get('/FacultyDropdown',FacultyController.FacultyDropdown);
 
 
 // Departments
@@ -70,25 +72,48 @@ router.post('/UpdateDepartment/:id', AuthVerifyMiddleware,DepartmentController.U
 router.get('/DepartmentList/:pageNo/:perPage/:searchKeyword', AuthVerifyMiddleware,DepartmentController.ListDepartments);
 router.get('/DepartmentDetailsByID/:id', AuthVerifyMiddleware,DepartmentController.DepartmentDetailsByID);
 router.delete('/DeleteDepartment/:id', AuthVerifyMiddleware,DepartmentController.DeleteDepartment);
-router.get('/DepartmentDropdown/:facultyID?', AuthVerifyMiddleware, DepartmentController.DepartmentDropdown);
+router.get('/DepartmentDropdown/:facultyID?',  DepartmentController.DepartmentDropdown);
 
 
 // Sections
 router.post('/CreateSection', AuthVerifyMiddleware,SectionController.CreateSection);
 router.get('/SectionList/:pageNo/:perPage/:searchKeyword', AuthVerifyMiddleware,SectionController.ListSections);
 router.delete('/DeleteSection/:id', AuthVerifyMiddleware,SectionController.DeleteSection);
-router.get('/SectionDropdown', AuthVerifyMiddleware,SectionController.SectionDropdown);
+router.get('/SectionDropdown', SectionController.SectionDropdown);
 
 
 // Customers
-router.post("/CreateCustomers",AuthVerifyMiddleware,CustomersController.CreateCustomers)
-router.post("/UpdateCustomers/:id",AuthVerifyMiddleware,CustomersController.UpdateCustomers)
+// Customer self-registration
+router.post("/register", CustomerCreateUpdateController.Registration);
+
+// Customer login
+router.post("/UserLogin", CustomerCreateUpdateController.Login); 
+
+// Verify email by sending OTP (email in URL)
+router.get("/RecoverVerifyEmail/:email", CustomerCreateUpdateController.RecoverVerifyEmail);
+
+// Verify OTP (email and OTP in URL)
+router.get("/RecoverVerifyOTP/:email/:otp", CustomerCreateUpdateController.RecoverVerifyOTP);
+
+router.post("/RecoverResetPass", CustomerCreateUpdateController.RecoverResetPass);
+
+// ------------------ Protected Routes (require auth) ------------------
+// Update profile
+router.post("/update", AuthVerifyMiddleware, CustomerCreateUpdateController.ProfileUpdate);
+
+// Get profile details
+router.get("/profile", AuthVerifyMiddleware, CustomerCreateUpdateController.ProfileDetails);
 router.get("/CustomersList/:pageNo/:perPage/:searchKeyword/:category",AuthVerifyMiddleware,CustomersController.CustomersList)
 router.get("/CustomersDropdown",AuthVerifyMiddleware,CustomersController.CustomersDropdown)
 router.get("/DeleteCustomer/:id",AuthVerifyMiddleware,CustomersController.DeleteCustomer)
 router.get("/CustomerDetailsByID/:id",AuthVerifyMiddleware,CustomersController.CustomersDetailsByID)
 router.post("/send-email", AuthVerifyMiddleware,upload.array("attachments"), CustomersController.SendEmailToCustomer);
 
+// CustomersProductEntry
+router.post("/CreateCustomerProductEntry",AuthVerifyMiddleware,CustomersProductEntryController.CreateCustomerProductEntry)
+router.get("/CustomerProductEntryList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,CustomersProductEntryController.CustomerProductEntryList)
+router.get("/DeleteCustomerProductEntry/:id",AuthVerifyMiddleware,CustomersProductEntryController.DeleteCustomerProductEntry)
+router.post("/CustomerProductReport",AuthVerifyMiddleware,CustomersProductEntryController.CustomerProductReport)
 
 // Suppliers
 router.post("/CreateSuppliers",AuthVerifyMiddleware,SuppliersController.CreateSuppliers)

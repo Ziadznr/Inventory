@@ -1,14 +1,14 @@
 import React, { lazy, Suspense } from 'react';
 import LazyLoader from "../../components/MasterLayout/LazyLoader";
 
-const ChairmanSendOTP = lazy(() => import('../../components/Chairmans/ChairmanSendOTP'));
+const CustomerSendOTP = lazy(() => import('../../components/Chairmans/CustomerSendOTP'));
 
-const ChairmanSendOTPPage = () => {
+const CustomerSendOTPPage = () => {
     return (
         <Suspense fallback={<LazyLoader />}>
-            <ChairmanSendOTP />
+            <CustomerSendOTP />
         </Suspense>
     );
 };
 
-export default ChairmanSendOTPPage;
+export default CustomerSendOTPPage;

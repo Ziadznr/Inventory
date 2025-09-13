@@ -36,11 +36,11 @@ exports.DeleteFaculty = async (req, res) => {
     }
 };
 
-// Faculty Dropdown (for creating Department)
+// Faculty Dropdown (works for both admin & self-registration)
 exports.FacultyDropdown = async (req, res) => {
-    const projection = { _id: 1, Name: 1 };
-    let result = await DropDownService(req, FacultyModel, projection);
-    res.status(200).json(result);
+  const projection = { _id: 1, Name: 1 };
+  let result = await DropDownService(req, FacultyModel, projection);
+  res.status(200).json(result);
 };
 
 

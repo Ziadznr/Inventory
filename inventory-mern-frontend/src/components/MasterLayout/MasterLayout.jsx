@@ -106,6 +106,15 @@ const MasterLayout = (props) => {
       ],
     },
     {
+      title: "CustomerProductEntry",
+      icon: <BsPeople className="side-bar-item-icon" />,
+      url: "/CustomerProductEntry",
+      subMenu: [
+        { title: "CustomerProductEntry", icon: <BsCircle size={16} />, url: "/CreateCustomerProductPage" },
+        { title: "Entry List", icon: <BsCircle size={16} />, url: "/CustomerProductEntryListPage" },
+      ],
+    },
+    {
       title: "Supplier",
       icon: <TbTruckDelivery className="side-bar-item-icon" />,
       url: "/Supplier",
@@ -174,6 +183,7 @@ const MasterLayout = (props) => {
         { title: "Return Report", icon: <BsCircle size={16} />, url: "/ReturnReportPage" },
         { title: "Purchase Report", icon: <BsCircle size={16} />, url: "/PurchaseReportPage" },
         { title: "Expense Report", icon: <BsCircle size={16} />, url: "/ExpenseReportPage" },
+        { title: "User's Stock Report", icon: <BsCircle size={16} />, url: "/CustomerProductReportPage" },
       ],
     },
   ];

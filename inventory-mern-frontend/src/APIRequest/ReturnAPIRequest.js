@@ -194,7 +194,7 @@ export async function DepartmentDropdownRequest(facultyID = "") {
 
     console.log("📌 DepartmentDropdown response.data:", result.data);
 
-    if (result.status === 200 && result.data?.success === "success") {
+    if (result.status === 200 && result.data?.status === "success") {
       return result.data.data || [];
     } else {
       console.error("DepartmentDropdownRequest: status not success");

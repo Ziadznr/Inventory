@@ -16,6 +16,7 @@ import saleReducer from "../state-slice/sale-slice"
 import departmentReducer from "../state-slice/department-slice"
 import facultyReducer from "../state-slice/faculty-slice"
 import sectionReducer from "../state-slice/section-slice"
+import customerProductReducer from "../state-slice/customerproduct-slice"
 
 
 export default configureStore({
@@ -36,6 +37,7 @@ export default configureStore({
         sale:saleReducer,
         department:departmentReducer,
         faculty:facultyReducer,
-        section:sectionReducer
+        section:sectionReducer,
+        customerProductEntry:customerProductReducer
     }
 })

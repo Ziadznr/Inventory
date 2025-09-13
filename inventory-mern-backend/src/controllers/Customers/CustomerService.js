@@ -1,12 +1,23 @@
 const ListService = async (req, DataModel, SearchArray = [], MatchQuery = {}) => {
   try {
-    const pageNo = Number(req.params.pageNo) || 1;
-    const perPage = Number(req.params.perPage) || 20;
+    let pageNo = Number(req.params.pageNo) || 1;
+    let perPage = Number(req.params.perPage) || 20;
     const searchKeyword = req.params.searchKeyword || "0";
     const skipRow = (pageNo - 1) * perPage;
 
+    // Ensure valid pagination values
+    if (pageNo < 1) pageNo = 1;
+    if (perPage < 1) perPage = 20;
+
     let matchStage = { ...MatchQuery };
 
+    // ---------------- Apply user role filter ----------------
+    // req.userRole & req.userEmail should be set by auth middleware
+    if (req.userRole === "Customer" && req.userEmail) {
+      matchStage.UserEmail = req.userEmail; // Customer sees only their own data
+    }
+
+    // ---------------- Apply search filter ----------------
     if (searchKeyword !== "0" && SearchArray.length > 0) {
       matchStage = { ...matchStage, $or: SearchArray };
     }
@@ -14,7 +25,7 @@ const ListService = async (req, DataModel, SearchArray = [], MatchQuery = {}) =>
     const data = await DataModel.aggregate([
       { $match: matchStage },
 
-      // ---------------- Lookup Faculty ----------------
+      // ---------------- Faculty Lookup ----------------
       {
         $lookup: {
           from: "faculties",
@@ -25,7 +36,7 @@ const ListService = async (req, DataModel, SearchArray = [], MatchQuery = {}) =>
       },
       { $unwind: { path: "$FacultyData", preserveNullAndEmptyArrays: true } },
 
-      // ---------------- Lookup Department ----------------
+      // ---------------- Department Lookup ----------------
       {
         $lookup: {
           from: "departments",
@@ -36,7 +47,7 @@ const ListService = async (req, DataModel, SearchArray = [], MatchQuery = {}) =>
       },
       { $unwind: { path: "$DepartmentData", preserveNullAndEmptyArrays: true } },
 
-      // ---------------- Lookup Section ----------------
+      // ---------------- Section Lookup ----------------
       {
         $lookup: {
           from: "sections",
@@ -71,11 +82,13 @@ const ListService = async (req, DataModel, SearchArray = [], MatchQuery = {}) =>
       }
     ]);
 
-    if (data.length > 0 && !data[0].Total.length) {
-      data[0].Total.push({ count: 0 });
+    // Normalize result
+    let result = data[0] || { Total: [], Rows: [] };
+    if (!result.Total.length) {
+      result.Total = [{ count: 0 }];
     }
 
-    return { success: "success", data };
+    return { status: "success", data: [result] };
   } catch (error) {
     console.error("ListService error:", error);
     return { status: "fail", data: error.toString() };

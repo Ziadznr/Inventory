@@ -17,12 +17,12 @@ import CreatePasswordPage from "./pages/Users/CreatePasswordPage";
 import ProfilePage from "./pages/Users/ProfilePage";
 
 // ------------------ Chairman Pages ------------------
-import ChairmanLoginPage from "./pages/Chairman/ChairmanLoginPage";
-import ChairmanRegistrationPage from "./pages/Chairman/ChairmanRegistrationPage";
-import ChairmanSendOTPPage from "./pages/Chairman/ChairmanSendOTPPage";
-import ChairmanVerifyOTPPage from "./pages/Chairman/ChairmanVerifyOTPPage";
-import ChairmanCreatePasswordPage from "./pages/Chairman/ChairmanCreatePasswordPage";
-import ChairmanProfilePage from "./pages/Chairman/ChairmanProfilePage";
+import CustomerLoginPage from "./pages/Customers/CustomerLoginPage.jsx";
+import CustomerRegistrationPage from "./pages/Customers/CustomerRegistrationPage.jsx";
+import CustomerSendOTPPage from "./pages/Customers/CustomerSendOTPPage.jsx";
+import CustomerVerifyOTPPage from "./pages/Customers/CustomerVerifyOTPPage.jsx";
+import CustomerCreatePasswordPage from "./pages/Customers/CustomerCreatePasswordPage.jsx";
+import CustomerProfilePage from "./pages/Customers/CustomerProfilePage.jsx";
 
 // ------------------ Dashboard & Other Pages ------------------
 import DashboardPage from "./pages/Dashboard/DashboardPage";
@@ -30,7 +30,7 @@ import BrandCreateUpdatePage from "./pages/Brand/BrandCreateUpdatePage";
 import BrandListPage from "./pages/Brand/BrandListPage";
 import CategoryCreateUpdatePage from "./pages/Category/CategoryCreateUpdatePage";
 import CategoryListPage from "./pages/Category/CategoryListPage";
-import CustomerCreateUpdatePage from "./pages/Customer/CustomerCreateUpdatePage";
+// import CustomerCreateUpdatePage from "./pages/Customer/CustomerCreateUpdatePage";
 import CustomerListPage from "./pages/Customer/CustomerListPage";
 import ExpenseTypeCreateUpdatePage from "./pages/ExpenseType/ExpenseTypeCreateUpdatePage";
 import ExpenseTypeListPage from "./pages/ExpenseType/ExpenseTypeListPage";
@@ -44,6 +44,7 @@ import PurchaseReportPage from "./pages/Report/PurchaseReportPage";
 import ReturnReportPage from "./pages/Report/ReturnReportPage";
 import SaleReportPage from "./pages/Report/SaleReportPage";
 import ExpenseReportPage from "./pages/Report/ExpenseReportPage";
+import CustomerProductReportPage from "./pages/Report/CustomerProductReportPage.jsx";
 import ReturnCreateUpdatePage from "./pages/Return/ReturnCreateUpdatePage";
 import ReturnListPage from "./pages/Return/ReturnListPage";
 import SalesCreateUpdatePage from "./pages/Sales/SalesCreateUpdatePage";
@@ -54,6 +55,10 @@ import DepartmentListPage from "./pages/Department/DepartmentListPage";
 import DepartmentCreateUpdatePage from "./pages/Department/DepartmentCreateUpdatePage";
 import FacultyOperationPage from './pages/Faculty/FacultyOperationPage';
 import SectionOperationPage from './pages/Section/SectionOperationPage.jsx';
+import CustomerDashboardPage from './pages/Customers/CustomerDashboardPage.jsx';
+import CustomerProductListPage from './pages/Customers/CustomerProductListPage.jsx';
+import CreateCustomerProductPage from './pages/Customer/CreateCustomerProductPage.jsx';
+import CustomerProductEntryListPage from './pages/Customer/CustomerProductEntryListPage.jsx';
 
 const App = () => {
   const token = getToken();
@@ -79,8 +84,10 @@ const App = () => {
               <Route path="/FacultyOperationPage" element={<FacultyOperationPage />} />
               <Route path="/department-list" element={<DepartmentListPage />} />
               <Route path="/DepartmentCreateUpdatePage" element={<DepartmentCreateUpdatePage />} />
-              <Route path="/CustomerCreateUpdatePage" element={<CustomerCreateUpdatePage />} />
+              {/* <Route path="/CustomerCreateUpdatePage" element={<CustomerCreateUpdatePage />} /> */}
               <Route path="/CustomerListPage" element={<CustomerListPage />} />
+              <Route path="/CreateCustomerProductPage" element={<CreateCustomerProductPage />} />
+              <Route path="/CustomerProductEntryListPage" element={<CustomerProductEntryListPage />} />
               <Route path="/ExpenseTypeCreateUpdatePage" element={<ExpenseTypeCreateUpdatePage />} />
               <Route path="/ExpenseTypeListPage" element={<ExpenseTypeListPage />} />
               <Route path="/ExpenseCreateUpdatePage" element={<ExpenseCreateUpdatePage />} />
@@ -99,6 +106,11 @@ const App = () => {
               <Route path="/ReturnReportPage" element={<ReturnReportPage />} />
               <Route path="/SaleReportPage" element={<SaleReportPage />} />
               <Route path="/ExpenseReportPage" element={<ExpenseReportPage />} />
+              <Route path="/CustomerProductReportPage" element={<CustomerProductReportPage />} />
+
+              <Route path="/customer-dashboard" element={<CustomerDashboardPage />} />
+              <Route path="/CustomerProductListPage" element={<CustomerProductListPage />} />
+              <Route path="/CustomerProfile" element={<CustomerProfilePage />} />
             </>
           )}
 
@@ -111,12 +123,12 @@ const App = () => {
               <Route path="/SendOTP" element={<SendOTPPage />} />
               <Route path="/VerifyOTP" element={<VerifyOTPPage />} />
               <Route path="/CreatePassword" element={<CreatePasswordPage />} />
-              <Route path="/ChairmanLogin" element={<ChairmanLoginPage />} />
-              <Route path="/ChairmanRegistration" element={<ChairmanRegistrationPage />} />
-              <Route path="/ChairmanSendOTP" element={<ChairmanSendOTPPage />} />
-              <Route path="/ChairmanVerifyOTP" element={<ChairmanVerifyOTPPage />} />
-              <Route path="/ChairmanCreatePassword" element={<ChairmanCreatePasswordPage />} />
-              <Route path="/ChairmanProfile" element={<ChairmanProfilePage />} />
+              <Route path="/CustomerLogin" element={<CustomerLoginPage />} />
+              <Route path="/CustomerRegistration" element={<CustomerRegistrationPage />} />
+              <Route path="/CustomerSendOTP" element={<CustomerSendOTPPage />} />
+              <Route path="/CustomerVerifyOTP" element={<CustomerVerifyOTPPage />} />
+              <Route path="/CustomerCreatePassword" element={<CustomerCreatePasswordPage />} />
+              
             </>
           )}
 

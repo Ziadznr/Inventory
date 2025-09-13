@@ -32,7 +32,7 @@ const LandingPage = () => {
           </button>
           <button
             className="landing-btn chairman-btn"
-            onClick={() => navigate("/ChairmanLogin")}
+            onClick={() => navigate("/CustomerLogin")}
           >
             User Login / Registration
           </button>

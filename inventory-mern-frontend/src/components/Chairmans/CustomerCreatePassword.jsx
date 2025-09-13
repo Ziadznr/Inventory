@@ -1,10 +1,10 @@
 import React, { Fragment, useRef } from "react";
 import { ErrorToast, IsEmpty } from "../../helper/FormHelper";
-import { ChairmanRecoverResetPassRequest } from "../../APIRequest/ChairmansAPIRequest";
+import { CustomerRecoverResetPassRequest } from "../../APIRequest/CustomerAPIRequest";
 import { getEmail, getOTP } from "../../helper/SessionHelper";
 import { useNavigate } from "react-router-dom";
 
-const ChairmanCreatePassword = () => {
+const CustomerCreatePassword = () => {
   let PasswordRef, ConfirmPasswordRef = useRef();
   const navigate = useNavigate();
 
@@ -14,15 +14,20 @@ const ChairmanCreatePassword = () => {
 
     if (IsEmpty(Password)) {
       ErrorToast("Password Required");
-    } else if (IsEmpty(ConfirmPassword)) {
+      return;
+    } 
+    if (IsEmpty(ConfirmPassword)) {
       ErrorToast("Confirm Password Required");
-    } else if (Password !== ConfirmPassword) {
+      return;
+    } 
+    if (Password !== ConfirmPassword) {
       ErrorToast("Password & Confirm Password Should be Same");
-    } else {
-      let result = await ChairmanRecoverResetPassRequest(getEmail(), getOTP(), Password);
-      if (result === true) {
-        navigate("/ChairmanLoginPage");
-      }
+      return;
+    }
+
+    let result = await CustomerRecoverResetPassRequest(getEmail(), getOTP(), Password);
+    if (result === true) {
+      navigate("/CustomerLogin"); // Redirect to Customer Login after reset
     }
   };
 
@@ -39,7 +44,7 @@ const ChairmanCreatePassword = () => {
                 <input
                   readOnly={true}
                   value={getEmail()}
-                  placeholder="Chairman Email"
+                  placeholder="Customer Email"
                   className="form-control animated fadeInUp"
                   type="email"
                 />
@@ -72,4 +77,4 @@ const ChairmanCreatePassword = () => {
   );
 };
 
-export default ChairmanCreatePassword;
+export default CustomerCreatePassword;

@@ -1,16 +1,16 @@
 import React, { Fragment, lazy, Suspense } from 'react';
 import LazyLoader from "../../components/MasterLayout/LazyLoader";
 
-const ChairmanRegistration = lazy(() => import('../../components/Chairmans/ChairmanRegistration'));
+const CustomerLogin = lazy(() => import('../../components/Chairmans/CustomerLogin'));
 
-const ChairmanRegistrationPage = () => {
+const CustomerLoginPage = () => {
     return (
         <Fragment>
             <Suspense fallback={<LazyLoader />}>
-                <ChairmanRegistration />
+                <CustomerLogin />
             </Suspense>
         </Fragment>
     );
 };
 
-export default ChairmanRegistrationPage;
+export default CustomerLoginPage;

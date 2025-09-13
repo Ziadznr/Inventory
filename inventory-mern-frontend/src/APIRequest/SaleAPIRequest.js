@@ -14,23 +14,19 @@ import { BaseURL } from "../helper/config";
 const AxiosHeader = { headers: { token: getToken() } };
 
 // ------------------ Sale List ------------------
-export async function SaleListRequest(pageNo, perPage, searchKeyword) {
+export async function SaleListRequest(pageNo, perPage, searchKeyword = "0") {
   try {
     store.dispatch(ShowLoader());
-
-    const URL = `${BaseURL}/SalesList/${pageNo}/${perPage}/${searchKeyword || "0"}`;
+    const URL = `${BaseURL}/SalesList/${pageNo}/${perPage}/${searchKeyword}`;
     console.log("📌 SaleListRequest URL:", URL);
 
     const result = await axios.get(URL, AxiosHeader);
     console.log("📌 Raw result from API:", result.data);
 
     if (result.status === 200 && result.data?.status === "success") {
-      const rows = result.data?.data || [];
-      const total = result.data?.total || rows.length; // ✅ backend may provide total
+      const rows = result.data.data || [];
+      const total = result.data.total || rows.length;
 
-      console.log("📌 Final rows for Redux:", rows);
-
-      // ✅ Save directly to Redux
       store.dispatch(SetSaleList(rows));
       store.dispatch(SetSaleListTotal(total));
 
@@ -50,25 +46,30 @@ export async function SaleListRequest(pageNo, perPage, searchKeyword) {
   }
 }
 
-
-
 // ------------------ Customer Dropdown ------------------
-export async function CustomerDropDownRequest(category = null, facultyID = null, departmentID = null, sectionID = null) {
+export async function CustomerDropDownRequest(
+  category = null,
+  facultyID = null,
+  departmentID = null,
+  sectionID = null,
+  userRole = "Customer" // Pass userRole
+) {
   try {
     store.dispatch(ShowLoader());
     let URL = `${BaseURL}/CustomersDropDown`;
-
     const params = [];
+
     if (category) params.push(`category=${category}`);
     if (facultyID) params.push(`facultyID=${facultyID}`);
     if (departmentID) params.push(`departmentID=${departmentID}`);
     if (sectionID) params.push(`sectionID=${sectionID}`);
+    if (userRole) params.push(`userRole=${userRole}`);
     if (params.length > 0) URL += `?${params.join("&")}`;
 
     const result = await axios.get(URL, AxiosHeader);
 
     if (result.status === 200 && result.data?.status === "success") {
-      const data = result.data?.data || [];
+      const data = result.data.data || [];
       store.dispatch(SetCustomerDropDown(data));
       return data;
     } else {
@@ -86,7 +87,6 @@ export async function CustomerDropDownRequest(category = null, facultyID = null,
   }
 }
 
-
 // ------------------ Product Dropdown ------------------
 export async function ProductDropDownRequest() {
   try {
@@ -95,15 +95,12 @@ export async function ProductDropDownRequest() {
     const result = await axios.get(URL, AxiosHeader);
 
     if (result.status === 200 && result.data?.status === "success") {
-      // ✅ Map products with guaranteed Stock
-      const data = (result.data?.data || []).map(p => ({
+      const data = (result.data.data || []).map(p => ({
         ...p,
-        Stock: p.Stock ?? 0  // Default 0 if Stock is missing
+        Stock: p.Stock ?? 0
       }));
 
-      console.log("ProductsDropDown final data:", data); // debug
       store.dispatch(SetProductDropDown(data));
-
       if (data.length === 0) ErrorToast("No Product Found");
       return data;
     } else {
@@ -120,10 +117,6 @@ export async function ProductDropDownRequest() {
     store.dispatch(HideLoader());
   }
 }
-
-
-
-
 
 // ------------------ Create Sale ------------------
 export async function CreateSaleRequest(ParentBody, ChildsBody) {
@@ -156,15 +149,9 @@ export async function FacultyDropdownRequest() {
     const URL = `${BaseURL}/FacultyDropdown`;
     const result = await axios.get(URL, AxiosHeader);
 
-    console.log("📌 FacultyDropdown raw Axios response:", result); // ✅ check full Axios response
-    console.log("📌 FacultyDropdown response.data:", result.data);   // ✅ check backend JSON
-
     if (result.status === 200 && result.data?.status === "success") {
-      const data = result.data?.data || [];
-      console.log("📌 FacultyDropdown final data array:", data); // ✅ what will be returned
-      return data;
+      return result.data.data || [];
     } else {
-      console.warn("FacultyDropdownRequest: status not success");
       return [];
     }
   } catch (e) {
@@ -175,20 +162,15 @@ export async function FacultyDropdownRequest() {
   }
 }
 
-
-
 // ------------------ Department Dropdown ------------------
 export async function DepartmentDropdownRequest(facultyID = "") {
   try {
     const URL = `${BaseURL}/DepartmentDropdown${facultyID ? "/" + facultyID : ""}`;
     const result = await axios.get(URL, AxiosHeader);
 
-    console.log("📌 DepartmentDropdown response.data:", result.data);
-
-    if (result.status === 200 && result.data?.success === "success") {
+    if (result.status === 200 && result.data?.status === "success") {
       return result.data.data || [];
     } else {
-      console.error("DepartmentDropdownRequest: status not success");
       return [];
     }
   } catch (e) {
@@ -197,28 +179,19 @@ export async function DepartmentDropdownRequest(facultyID = "") {
   }
 }
 
-
 // ------------------ Section Dropdown ------------------
 export async function SectionDropdownRequest() {
   try {
     const URL = `${BaseURL}/SectionDropdown`;
     const result = await axios.get(URL, AxiosHeader);
 
-    console.log("📌 SectionDropdown raw Axios response:", result);
-    console.log("📌 SectionDropdown response.data:", result.data);
-
-    // Check correctly if status is "success"
     if (result.status === 200 && result.data?.status === "success") {
-      const data = result.data?.data || [];
-      console.log("📌 SectionDropdown final data array:", data);
-      return data;
+      return result.data.data || [];
     } else {
-      console.warn("SectionDropdownRequest: status not success");
       return [];
     }
   } catch (e) {
     console.error("SectionDropdownRequest error:", e);
     return [];
   }
-};
-
+}

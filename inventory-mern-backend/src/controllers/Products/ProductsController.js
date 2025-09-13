@@ -38,7 +38,7 @@ exports.ProductsList = async (req, res) => {
         ];
 
         let aggregatePipeline = [
-            { $match: { UserEmail } },
+            // { $match: { UserEmail } },
 
             // Join with brands and categories
             {

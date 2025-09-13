@@ -3,16 +3,18 @@ const DropDownService = async (Request, DataModel, Projection, extraFilter = {})
   try {
     let UserEmail = Request.headers['email'];
 
-    let matchStage = { UserEmail: UserEmail, ...extraFilter };
+    // Only include UserEmail if it exists
+    let matchStage = { ...extraFilter };
+    if (UserEmail) matchStage.UserEmail = UserEmail;
 
     let data = await DataModel.aggregate([
       { $match: matchStage },
       { $project: Projection }
     ]);
 
-    return { success: 'success', data: data };
+    return { status: 'success', data: data };
   } catch (error) {
-    return { success: 'fail', data: error.toString() };
+    return { status: 'fail', data: error.toString() };
   }
 };
 

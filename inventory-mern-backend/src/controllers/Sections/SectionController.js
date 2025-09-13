@@ -37,11 +37,10 @@ exports.DeleteSection = async (req, res) => {
     }
 };
 
-// Section Dropdown (for creating Customer)
 exports.SectionDropdown = async (req, res) => {
-    const projection = { _id: 1, Name: 1 };
-    let result = await DropDownService(req, SectionModel, projection);
-    res.status(200).json(result);
+  const projection = { _id: 1, Name: 1 };
+  const result = await DropDownService(req, SectionModel, projection);
+  res.status(200).json(result);
 };
 
 

@@ -1,0 +1,173 @@
+import React, { useEffect } from "react";
+import { PurchaseSummary } from "../../APIRequest/SummaryAPIRequest";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  Cell,
+} from "recharts";
+import { useSelector } from "react-redux";
+import { NumericFormat as CurrencyFormat } from "react-number-format";
+import store from "../../redux/store/store";
+import { ShowLoader, HideLoader } from "../../redux/state-slice/settings-slice";
+
+// ---------------- Helpers ----------------
+const getLast30Days = () => {
+  const dates = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    dates.push(d.toISOString().split("T")[0]); // YYYY-MM-DD
+  }
+  return dates;
+};
+
+const mapToLast30Days = (data) => {
+  const last30Days = getLast30Days();
+  return last30Days.map((date) => {
+    const found = data.find((d) => d._id === date);
+    return { _id: date, TotalAmount: found ? found.TotalAmount : 0 };
+  });
+};
+
+// ---------------- Colors ----------------
+const purchaseColors = {
+  gradient: ["#32cd32", "#228b22"], // green shades
+  line: "#228b22",
+};
+
+const CustomerDashboard = () => {
+  useEffect(() => {
+    const loadData = async () => {
+      store.dispatch(ShowLoader());
+      try {
+        await PurchaseSummary();
+      } finally {
+        store.dispatch(HideLoader());
+      }
+    };
+    loadData();
+  }, []);
+
+  // ---------------- Redux State ----------------
+  const PurchaseChart = useSelector((state) => state.dashboard.PurchaseChart);
+  const PurchaseTotal = useSelector((state) => state.dashboard.PurchaseTotal);
+
+  // ---------------- Render Functions ----------------
+  const renderCard = (title, total, color) => (
+    <div className="col-md-4 p-2" key={title}>
+      <div
+        className="card shadow-sm"
+        style={{ borderLeft: `5px solid ${color}`, borderRadius: "10px" }}
+      >
+        <div className="card-body">
+          <span className="h5">
+            <CurrencyFormat
+              value={total}
+              displayType={"text"}
+              thousandSeparator={true}
+              prefix={"৳ "}
+            />
+          </span>
+          <p className="text-muted">{title}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderBarChart = (title, data) => {
+    const gradientId = "gradPurchase";
+    const gradient = purchaseColors.gradient;
+
+    return (
+      <div className="col-md-6 p-2" key={title}>
+        <div className="card shadow-sm" style={{ borderRadius: "10px" }}>
+          <div className="card-body">
+            <span className="h6">{title}</span>
+            <ResponsiveContainer className="mt-4" width="100%" height={220}>
+              <BarChart
+                data={mapToLast30Days(data)}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={gradient[0]} stopOpacity={0.8} />
+                    <stop offset="100%" stopColor={gradient[1]} stopOpacity={0.8} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                <XAxis dataKey="_id" tick={{ fontSize: 10 }} />
+                <YAxis />
+                <Tooltip />
+                <Bar
+                  dataKey="TotalAmount"
+                  fill={`url(#${gradientId})`}
+                  radius={[6, 6, 0, 0]}
+                  animationDuration={1500}
+                >
+                  {mapToLast30Days(data).map((entry, index) => (
+                    <Cell key={`cell-${index}`} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderLineChart = (title, data, color) => (
+    <div className="col-md-6 p-2" key={title + "_line"}>
+      <div className="card shadow-sm" style={{ borderRadius: "10px" }}>
+        <div className="card-body">
+          <span className="h6">{title} Trend</span>
+          <ResponsiveContainer className="mt-4" width="100%" height={220}>
+            <LineChart
+              data={mapToLast30Days(data)}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="_id" tick={{ fontSize: 10 }} />
+              <YAxis />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="TotalAmount"
+                stroke={color}
+                strokeWidth={3}
+                dot={{ r: 5 }}
+                activeDot={{ r: 7 }}
+                animationDuration={1500}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="container-fluid my-4">
+      {/* Only Purchase Card */}
+      <div className="row">
+        {renderCard("Total Purchase", PurchaseTotal, purchaseColors.gradient[0])}
+      </div>
+
+      {/* Only Purchase Charts */}
+      <div className="row">
+        {renderBarChart("Purchase Last 30 Days", PurchaseChart)}
+        {renderLineChart("Purchase", PurchaseChart, purchaseColors.line)}
+      </div>
+    </div>
+  );
+};
+
+export default CustomerDashboard;
