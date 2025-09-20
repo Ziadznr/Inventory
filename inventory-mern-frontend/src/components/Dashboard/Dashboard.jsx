@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import {
   ExpensesSummary,
   SaleSummary,
-  ReturnSummary,
   PurchaseSummary,
 } from "../../APIRequest/SummaryAPIRequest";
 import {
@@ -57,7 +56,6 @@ const Dashboard = () => {
         await Promise.all([
           ExpensesSummary(),
           SaleSummary(),
-          ReturnSummary(),
           PurchaseSummary(),
         ]);
       } finally {

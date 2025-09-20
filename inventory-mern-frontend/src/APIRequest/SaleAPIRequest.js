@@ -14,23 +14,22 @@ import { BaseURL } from "../helper/config";
 const AxiosHeader = { headers: { token: getToken() } };
 
 // ------------------ Sale List ------------------
-export async function SaleListRequest(pageNo, perPage, searchKeyword = "0") {
+export async function SaleListRequest(pageNo, perPage, searchKeyword = "0", customerId) {
   try {
     store.dispatch(ShowLoader());
-    const URL = `${BaseURL}/SalesList/${pageNo}/${perPage}/${searchKeyword}`;
+    const keyword = encodeURIComponent(searchKeyword || "0");
+
+    // Build URL
+    let URL = `${BaseURL}/SalesList/${pageNo}/${perPage}/${keyword}`;
+    if (customerId) URL += `/${customerId}`;  // only append if defined
+
     console.log("📌 SaleListRequest URL:", URL);
 
     const result = await axios.get(URL, AxiosHeader);
-    console.log("📌 Raw result from API:", result.data);
 
     if (result.status === 200 && result.data?.status === "success") {
-      const rows = result.data.data || [];
-      const total = result.data.total || rows.length;
-
-      store.dispatch(SetSaleList(rows));
-      store.dispatch(SetSaleListTotal(total));
-
-      if (rows.length === 0) ErrorToast("No Data Found");
+      store.dispatch(SetSaleList(result.data.data || []));
+      store.dispatch(SetSaleListTotal(result.data.total || 0));
     } else {
       store.dispatch(SetSaleList([]));
       store.dispatch(SetSaleListTotal(0));
@@ -45,6 +44,7 @@ export async function SaleListRequest(pageNo, perPage, searchKeyword = "0") {
     store.dispatch(HideLoader());
   }
 }
+
 
 // ------------------ Customer Dropdown ------------------
 export async function CustomerDropDownRequest(

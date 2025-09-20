@@ -50,15 +50,15 @@ const CustomerProductReport = ({ userCategory }) => {
     }
   }, [selectedFaculty]);
 
-  // Load sections when department changes
-  useEffect(() => {
-    if (selectedDepartment) {
-      (async () => setSections(await SectionDropdownRequest(selectedDepartment)))();
-    } else {
-      setSections([]);
-      setSelectedSection("");
-    }
-  }, [selectedDepartment]);
+  // Load all sections independently (not tied to faculty/department)
+useEffect(() => {
+  const fetchSections = async () => {
+    const data = await SectionDropdownRequest(); // Fetch all sections
+    setSections(data || []);
+  };
+  fetchSections();
+}, []);
+
 
   // Load customers when filter is "customer" and hierarchy selected
   useEffect(() => {
@@ -199,19 +199,25 @@ const CustomerProductReport = ({ userCategory }) => {
                   </>
                 )}
 
-                {selectedFilter === "section" && (
-                  <div className="col-2 p-2">
-                    <label>Section:</label>
-                    <select
-                      className="form-control form-control-sm"
-                      value={selectedSection}
-                      onChange={(e) => setSelectedSection(e.target.value)}
-                    >
-                      <option value="">Select Section</option>
-                      {sections.map(s => <option key={s._id} value={s._id}>{s.Name}</option>)}
-                    </select>
-                  </div>
-                )}
+                {/* Section filter (independent) */}
+{selectedFilter === "section" && (
+  <div className="col-2 p-2">
+    <label>Section:</label>
+    <select
+      className="form-control form-control-sm"
+      value={selectedSection}
+      onChange={(e) => setSelectedSection(e.target.value)}
+    >
+      <option value="">Select Section</option>
+      {sections.map((s) => (
+        <option key={s._id} value={s._id}>
+          {s.Name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
 
                 {/* Customer filter */}
                 {selectedFilter === "customer" && (

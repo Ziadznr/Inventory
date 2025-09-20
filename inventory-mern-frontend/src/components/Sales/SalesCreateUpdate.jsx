@@ -1,3 +1,4 @@
+// src/components/Sales/SalesCreateUpdate.js
 import React, { Fragment, useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import store from "../../redux/store/store";
@@ -15,7 +16,7 @@ import {
   SectionDropdownRequest
 } from "../../APIRequest/SaleAPIRequest";
 import { BsCartCheck, BsTrash } from "react-icons/bs";
-import { SuccessToast,ErrorToast, IsEmpty } from "../../helper/FormHelper";
+import { SuccessToast, ErrorToast, IsEmpty } from "../../helper/FormHelper";
 
 const SalesCreateUpdate = () => {
   const [facultyList, setFacultyList] = useState([]);
@@ -24,6 +25,7 @@ const SalesCreateUpdate = () => {
   const [customerList, setCustomerList] = useState([]);
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState(0);
+  const [slipNo, setSlipNo] = useState(""); // <-- local state for showing slip number
 
   const SaleFormValue = useSelector(state => state.sale.SaleFormValue);
   const ProductDropDown = useSelector(state => state.sale.ProductDropDown);
@@ -32,8 +34,6 @@ const SalesCreateUpdate = () => {
   const productRef = useRef();
   const qtyRef = useRef();
   const unitPriceRef = useRef();
-
-  
 
   // ---------------- Helper: Calculate Grand Total ----------------
   const calculateGrandTotal = (items, otherCost) => {
@@ -143,7 +143,6 @@ const SalesCreateUpdate = () => {
 
     store.dispatch(SetSaleItemList(newItem));
 
-    // Update GrandTotal including OtherCost
     const updatedItems = [...SaleItemList, newItem];
     store.dispatch(OnChangeSaleInput({
       Name: "GrandTotal",
@@ -170,15 +169,18 @@ const SalesCreateUpdate = () => {
     }));
   };
 
- // ---------------- Create Sale ----------------
-const CreateNewSale = async () => { if (!SaleFormValue.CustomerID) 
-  
-return ErrorToast("Select Customer"); 
-const res = await CreateSaleRequest(SaleFormValue, SaleItemList); 
-if (res) { alert("Sale Created Successfully"); 
-  console.log("Sale created, email sent from backend (check backend console)."); } };
+  // ---------------- Create Sale ----------------
+  const CreateNewSale = async () => {
+    if (!SaleFormValue.CustomerID) return ErrorToast("Select Customer");
 
+    const res = await CreateSaleRequest(SaleFormValue, SaleItemList);
 
+    if (res) {
+      setSlipNo(res.SlipNo); // <-- set slip number from backend response
+      SuccessToast(`Sale Created! SlipNo: ${res.SlipNo}`);
+      console.log("Sale created, email sent from backend. SlipNo:", res.SlipNo);
+    }
+  };
 
   return (
     <Fragment>
@@ -191,6 +193,13 @@ if (res) { alert("Sale Created Successfully");
               <div className="card-body">
                 <h5>Create Sales</h5>
                 <hr />
+
+                {/* Show SlipNo if available */}
+                {slipNo && (
+                  <div className="alert alert-info p-2 mb-2">
+                    <strong>Slip No:</strong> {slipNo}
+                  </div>
+                )}
 
                 {/* Category */}
                 <div className="mb-2">

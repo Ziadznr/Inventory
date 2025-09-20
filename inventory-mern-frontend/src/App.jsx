@@ -59,6 +59,8 @@ import CustomerDashboardPage from './pages/Customers/CustomerDashboardPage.jsx';
 import CustomerProductListPage from './pages/Customers/CustomerProductListPage.jsx';
 import CreateCustomerProductPage from './pages/Customer/CreateCustomerProductPage.jsx';
 import CustomerProductEntryListPage from './pages/Customer/CustomerProductEntryListPage.jsx';
+import IndividualProductEntryListPage from './pages/Customer/IndividualProductEntryListPage.jsx';
+import TakeFromCSPage from './pages/Customer/TakeFromCSPage.jsx';
 
 const App = () => {
   const token = getToken();
@@ -111,6 +113,8 @@ const App = () => {
               <Route path="/customer-dashboard" element={<CustomerDashboardPage />} />
               <Route path="/CustomerProductListPage" element={<CustomerProductListPage />} />
               <Route path="/CustomerProfile" element={<CustomerProfilePage />} />
+              <Route path="/my-entries" element={<IndividualProductEntryListPage />} />
+              <Route path="/TakeFromUniversity" element={<TakeFromCSPage />} />
             </>
           )}
 

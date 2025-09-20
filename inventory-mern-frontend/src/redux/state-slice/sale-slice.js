@@ -9,6 +9,7 @@ export const saleSlice = createSlice({
     ProductDropDown: [],        // Product dropdown options
     SaleFormValue: {
       CustomerID: '',           // Hidden from UI, used internally
+      SlipNo: '',               // 🔹 New slip number field
       OtherCost: '',            // Additional cost
       GrandTotal: '',           // Calculated total
       Note: ''                  // Optional note
@@ -43,8 +44,12 @@ export const saleSlice = createSlice({
     },
     ClearSaleForm: (state) => {
       // Optional: reset sale form values
-      state.SaleFormValue = { CustomerID: '', OtherCost: '', GrandTotal: '', Note: '' };
+      state.SaleFormValue = { CustomerID: '', SlipNo: '', OtherCost: '', GrandTotal: '', Note: '' };
       state.SaleItemList = [];
+    },
+    SetSlipNo: (state, action) => {
+      // 🔹 Update slip number manually if needed
+      state.SaleFormValue.SlipNo = action.payload;
     }
   }
 });
@@ -58,7 +63,8 @@ export const {
   SetCustomerDropDown,
   SetSaleListTotal,
   OnChangeSaleInput,
-  ClearSaleForm
+  ClearSaleForm,
+  SetSlipNo
 } = saleSlice.actions;
 
 export default saleSlice.reducer;

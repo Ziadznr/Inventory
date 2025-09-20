@@ -1,135 +1,285 @@
+const mongoose = require('mongoose');
 const ParentModel = require('../../models/Returns/ReturnsModel');
 const ChildsModel = require('../../models/Returns/ReturnsProductsModel');
 const CreateParentChildsService = require('../../services/common/CreateParentChildsService');
-const ListOneJoinService = require('../../services/common/ListOneJoinService');
 const DeleteParentChildsService = require('../../services/common/DeleteParentChildsService');
-const ReturnReportService = require('../../services/report/ReturnReportService');
-const ReturnSummeryService = require('../../services/summery/ReturnSummeryService');
+const ProductDropDownService = require("../../services/Return/ProductDropdownService");
 
+const SaleModel = require("../../models/Sales/SalesModel");
+const SalesProductsModel = require("../../models/Sales/SalesProductsModel");
+const CustomersProductEntryModel = require("../../models/Customers/CustomersProductEntryModel");
+const CustomerModel = require("../../models/Customers/CustomersModel");
+
+// ---------------- CREATE RETURN ----------------
 exports.CreateReturns = async (req, res) => {
-    let Result = await CreateParentChildsService(req, ParentModel, ChildsModel, 'ReturnID');
-    res.status(200).json(Result);
-}
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-exports.ReturnList = async (req, res) => {
-    try {
-        const searchKeyword = req.params.searchKeyword || "";
-        console.log("Search keyword:", searchKeyword);
+  try {
+    const { Parent, Childs } = req.body;
+    console.log("📌 Request body:", req.body);
 
-        const SearchRgx = { $regex: searchKeyword, $options: "i" };
+    if (!Parent) return res.status(400).json({ status: "fail", message: "Parent data is required" });
 
-        // Lookup customers
-        const JoinCustomer = {
-            $lookup: {
-                from: "customers",
-                localField: "CustomerID",
-                foreignField: "_id",
-                as: "customers"
-            }
-        };
+    const { CustomerID, SaleID, CustomerProductEntryID, Reason, GivenDate, UserEmail, SlipNo } = Parent;
+    const Products = Childs;
 
-        // Lookup faculties
-        const JoinFaculty = {
-            $lookup: {
-                from: "faculties",
-                localField: "customers.Faculty",
-                foreignField: "_id",
-                as: "faculty"
-            }
-        };
+    console.log("📌 Extracted Parent:", Parent);
+    console.log("📌 Extracted Products:", Products);
 
-        // Lookup departments
-        const JoinDepartment = {
-            $lookup: {
-                from: "departments",
-                localField: "customers.Department",
-                foreignField: "_id",
-                as: "department"
-            }
-        };
+    if (!CustomerID) return res.status(400).json({ status: "fail", message: "CustomerID is required" });
+    if (!Products || !Array.isArray(Products) || Products.length === 0)
+      return res.status(400).json({ status: "fail", message: "At least 1 product is required for return" });
 
-        // Lookup sections
-        const JoinSection = {
-            $lookup: {
-                from: "sections",
-                localField: "customers.Section",
-                foreignField: "_id",
-                as: "section"
-            }
-        };
+    // 1️⃣ Create main return document
+    const newReturn = await ParentModel.create([{
+      CustomerID,
+      SaleID,
+      CustomerProductEntryID,
+      Reason,
+      GivenDate,
+      UserEmail,
+      SlipNo: SlipNo || null   // Save SlipNo if provided
+    }], { session });
 
-        // Lookup products (child)
-        const JoinProducts = {
-            $lookup: {
-                from: "returnsproducts",
-                localField: "_id",      // parent _id
-                foreignField: "ReturnID", // child ReturnID
-                as: "products"
-            }
-        };
+    const ReturnID = newReturn[0]._id;
+    console.log("✅ Created Return:", newReturn[0]);
 
-        const MatchStage = {
-            $match: {
-                $or: [
-                    { Reason: SearchRgx },
-                    { "customers.CustomerName": SearchRgx },
-                    { "customers.Phone": SearchRgx },
-                    { "customers.CustomerEmail": SearchRgx }
-                ]
-            }
-        };
+    // 2️⃣ Process each product
+    for (const item of Products) {
+      let { ProductID, Qty, Source, ProductName } = item;
+      console.log("📌 Processing product:", item);
 
-        const Result = await ParentModel.aggregate([
-            JoinCustomer,
-            JoinFaculty,
-            JoinDepartment,
-            JoinSection,
-            JoinProducts,   // include products here
-            MatchStage
-        ]);
+      // If ProductID is missing, try to fetch it from source by name
+      if (!ProductID) {
+        if (Source === "sale" && SaleID) {
+          const saleProduct = await SalesProductsModel.findOne({ SaleID, ProductName }).lean();
+          ProductID = saleProduct?._id;
+        } else if (Source === "customerEntry" && CustomerProductEntryID) {
+          const entry = await CustomersProductEntryModel.findById(CustomerProductEntryID).lean();
+          const prod = entry?.Products?.find(p => p.ProductName === ProductName);
+          ProductID = prod?._id;
+        }
+      }
 
-        console.log("Raw Result from aggregate:", JSON.stringify(Result, null, 2));
+      // Save return product
+      await ChildsModel.create([{
+        UserEmail,
+        ReturnID,
+        ProductID,
+        ProductName,
+        Qty,
+        Source
+      }], { session });
 
-        const Data = Result.map(returnDoc => {
-  const customer = returnDoc.customers?.[0] || {};
-  return {
-    ...returnDoc,
-    GivenDate: returnDoc.GivenDate,  // manual sale date
-    CustomerData: {
-      CustomerName: customer.CustomerName || "-",
-      Category: customer.Category || "-",
-      FacultyName: returnDoc.faculty?.[0]?.Name || "-",
-      DepartmentName: returnDoc.department?.[0]?.Name || "-",
-      SectionName: returnDoc.section?.[0]?.Name || "-"
-    },
-    Products: (returnDoc.products || []).map(p => ({
-      ProductName: p.ProductName,
-      Qty: p.Qty
-    }))
-  };
-});
+      // Decrement AvailableQty in source collection if ProductID exists
+      if (ProductID) {
+        if (Source === "sale" && SaleID) {
+          await SalesProductsModel.updateOne(
+            { SaleID, _id: ProductID },
+            { $inc: { AvailableQty: -Qty } },
+            { session }
+          );
+        }
 
-
-        console.log("Mapped Data with products:", JSON.stringify(Data, null, 2));
-
-        res.status(200).json({ status: "success", data: Data });
-    } catch (error) {
-        console.error("ReturnList Error:", error);
-        res.status(500).json({ status: "error", message: error.toString() });
+        if (Source === "customerEntry" && CustomerProductEntryID) {
+          await CustomersProductEntryModel.updateOne(
+            { _id: CustomerProductEntryID, "Products._id": ProductID },
+            { $inc: { "Products.$.AvailableQty": -Qty } },
+            { session }
+          );
+        }
+      }
     }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    console.log("✅ Return created and quantities updated successfully");
+    res.status(201).json({
+      status: "success",
+      message: "Return created and quantities updated successfully",
+      data: newReturn[0]
+    });
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("❌ CreateReturns Error:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
 };
 
+// ---------------- RETURN LIST ----------------
+exports.ReturnList = async (req, res) => {
+  try {
+    const searchKeyword = req.params.searchKeyword || "";
+    console.log("📌 ReturnList searchKeyword:", searchKeyword);
+
+    const Result = await ParentModel.aggregate([
+      { $lookup: { from: "customers", localField: "CustomerID", foreignField: "_id", as: "customer" } },
+      { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "faculties", localField: "customer.Faculty", foreignField: "_id", as: "faculty" } },
+      { $unwind: { path: "$faculty", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "departments", localField: "customer.Department", foreignField: "_id", as: "department" } },
+      { $unwind: { path: "$department", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "sections", localField: "customer.Section", foreignField: "_id", as: "section" } },
+      { $unwind: { path: "$section", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "returnsproducts", localField: "_id", foreignField: "ReturnID", as: "products" } },
+      {
+        $match: {
+          $or: [
+            { Reason: { $regex: searchKeyword, $options: "i" } },
+            { "customer.CustomerName": { $regex: searchKeyword, $options: "i" } },
+            { "customer.Phone": { $regex: searchKeyword, $options: "i" } }
+          ]
+        }
+      }
+    ]);
+
+    const Data = await Promise.all(Result.map(async returnDoc => {
+      const customer = returnDoc.customer || {};
+
+      // Determine SlipNo: stored or fallback
+      let slipNo = returnDoc.SlipNo || "No Slip";
+      if (slipNo === "No Slip") {
+        if (returnDoc.SaleID) {
+          const sale = await SaleModel.findById(returnDoc.SaleID).lean();
+          slipNo = sale?.SlipNo || "No Slip";
+        } else if (returnDoc.CustomerProductEntryID) {
+          const entry = await CustomersProductEntryModel.findById(returnDoc.CustomerProductEntryID).lean();
+          slipNo = entry?.PayslipNumber || "No Slip";
+        }
+      }
+
+      // Compute AvailableQty for each returned product
+      const products = await Promise.all((returnDoc.products || []).map(async p => {
+        let originalQty = 0;
+
+        // If ProductID missing, try to fetch by name
+        if (!p.ProductID) {
+          if (p.Source === "sale" && returnDoc.SaleID) {
+            const saleProduct = await SalesProductsModel.findOne({ SaleID: returnDoc.SaleID, ProductName: p.ProductName }).lean();
+            p.ProductID = saleProduct?._id;
+            originalQty = saleProduct?.Qty || 0;
+          } else if (p.Source === "customerEntry" && returnDoc.CustomerProductEntryID) {
+            const entry = await CustomersProductEntryModel.findById(returnDoc.CustomerProductEntryID).lean();
+            const prod = entry?.Products?.find(pr => pr.ProductName === p.ProductName);
+            p.ProductID = prod?._id;
+            originalQty = prod?.Qty || 0;
+          }
+        } else {
+          // Normal flow if ProductID exists
+          if (p.Source === "sale") {
+            const saleProduct = await SalesProductsModel.findById(p.ProductID).lean();
+            originalQty = saleProduct?.Qty || 0;
+          } else if (p.Source === "customerEntry" && returnDoc.CustomerProductEntryID) {
+            const entry = await CustomersProductEntryModel.findById(returnDoc.CustomerProductEntryID).lean();
+            const prod = entry?.Products?.find(pr => pr._id?.toString() === p.ProductID?.toString());
+            originalQty = prod?.Qty || 0;
+          }
+        }
+
+        // Total returned for this product
+        const agg = await ChildsModel.aggregate([
+          { $match: { ProductID: p.ProductID, ReturnID: returnDoc._id } },
+          { $group: { _id: null, sumQty: { $sum: "$Qty" } } }
+        ]);
+        const totalReturned = agg.length ? agg[0].sumQty : 0;
+
+        return {
+          ProductName: p.ProductName,
+          Qty: p.Qty,
+          AvailableQty: Math.max(originalQty - totalReturned, 0)
+        };
+      }));
+
+      return {
+        ...returnDoc,
+        SlipNo: slipNo,
+        Products: products,
+        CustomerData: {
+          CustomerName: customer.CustomerName || "-",
+          Category: customer.Category || "-",
+          FacultyName: returnDoc.faculty?.Name || "-",
+          DepartmentName: returnDoc.department?.Name || "-",
+          SectionName: returnDoc.section?.Name || "-"
+        }
+      };
+    }));
+
+    console.log("✅ ReturnList Data prepared:", Data);
+    res.status(200).json({ status: "success", data: Data });
+  } catch (error) {
+    console.error("❌ ReturnList Error:", error);
+    res.status(500).json({ status: "error", message: error.toString() });
+  }
+};
+
+
+
+// ---------------- DELETE RETURN ----------------
 exports.ReturnsDelete = async (req, res) => {
+  try {
     let Result = await DeleteParentChildsService(req, ParentModel, ChildsModel, 'ReturnID');
     res.status(200).json(Result);
-}
+  } catch (error) {
+    console.error("❌ ReturnsDelete Error:", error);
+    res.status(500).json({ status: "error", message: error.toString() });
+  }
+};
 
+// ---------------- RETURN SLIP & PRODUCTS ----------------
+exports.ReturnProductsDropdown = async (req, res) => {
+  try {
+    const { customerId, slipNo } = req.query;
+    if (!customerId || !slipNo) return res.status(400).json({ status: 'error', message: 'CustomerID and SlipNo are required' });
+
+    const products = await ProductDropDownService(customerId, slipNo);
+    const availableProducts = products.filter(p => p.Qty > 0);
+
+    res.status(200).json({ status: 'success', data: availableProducts });
+  } catch (error) {
+    console.error("❌ ReturnProductsDropdown Error:", error);
+    res.status(500).json({ status: 'error', message: error.toString() });
+  }
+};
+
+exports.ReturnSlipDropdown = async (req, res) => {
+  try {
+    const customerId = req.query.customerId;
+    if (!customerId) return res.status(400).json({ status: "error", message: "CustomerID is required" });
+
+    const slipsFromSales = await SaleModel.find({ CustomerID: customerId }).distinct("SlipNo");
+    const slipsFromCustomerEntry = await CustomersProductEntryModel.find({ CustomerID: customerId }).distinct("PayslipNumber");
+
+    const allSlips = Array.from(new Set([...slipsFromSales, ...slipsFromCustomerEntry]));
+    res.status(200).json({ status: "success", data: allSlips });
+  } catch (error) {
+    console.error("❌ ReturnSlipDropdown Error:", error);
+    res.status(500).json({ status: "error", message: error.toString() });
+  }
+};
+
+// 🔹 Returns Report by Date
 exports.ReturnByDate = async (req, res) => {
+  try {
     let Result = await ReturnReportService(req);
     res.status(200).json(Result);
-}
+  } catch (error) {
+    console.error("❌ ReturnByDate Error:", error);
+    res.status(500).json({ status: "error", message: error.toString() });
+  }
+};
 
-exports.ReturnSummery = async (req, res) => {
-    let Result = await ReturnSummeryService(req);
-    res.status(200).json(Result);
-}
+// 🔹 Returns Summary
+// exports.ReturnSummery = async (req, res) => {
+//   try {
+//     let Result = await ReturnSummeryService(req);
+//     res.status(200).json(Result);
+//   } catch (error) {
+//     console.error("❌ ReturnSummery Error:", error);
+//     res.status(500).json({ status: "error", message: error.toString() });
+//   }
+// };
+

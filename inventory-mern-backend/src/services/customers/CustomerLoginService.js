@@ -12,7 +12,7 @@ const CustomerLoginService = async (Request) => {
             return { status: 'unauthorized', data: 'Invalid email or password' };
         }
 
-        const token = await CreateToken(customer.CustomerEmail);
+        const token = await CreateToken(customer.CustomerEmail, "Customer");
 
         const { Password: _, ...customerData } = customer.toObject(); // exclude password
         return { status: 'success', token, data: customerData };

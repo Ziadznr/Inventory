@@ -42,9 +42,9 @@ export async function ExpensesSummary() {
     await fetchSummary(`${BaseURL}/ExpensesSummary`, SetExpenseChart, SetExpenseTotal);
 }
 
-export async function ReturnSummary() {
-    await fetchSummary(`${BaseURL}/ReturnSummary`, SetReturnChart, SetReturnTotal);
-}
+// export async function ReturnSummary() {
+//     await fetchSummary(`${BaseURL}/ReturnSummary`, SetReturnChart, SetReturnTotal);
+// }
 
 export async function SaleSummary() {
     await fetchSummary(`${BaseURL}/SalesSummary`, SetSaleChart, SetSaleTotal);

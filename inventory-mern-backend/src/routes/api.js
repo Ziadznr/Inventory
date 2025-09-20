@@ -110,10 +110,10 @@ router.get("/CustomerDetailsByID/:id",AuthVerifyMiddleware,CustomersController.C
 router.post("/send-email", AuthVerifyMiddleware,upload.array("attachments"), CustomersController.SendEmailToCustomer);
 
 // CustomersProductEntry
-router.post("/CreateCustomerProductEntry",AuthVerifyMiddleware,CustomersProductEntryController.CreateCustomerProductEntry)
-router.get("/CustomerProductEntryList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,CustomersProductEntryController.CustomerProductEntryList)
-router.get("/DeleteCustomerProductEntry/:id",AuthVerifyMiddleware,CustomersProductEntryController.DeleteCustomerProductEntry)
-router.post("/CustomerProductReport",AuthVerifyMiddleware,CustomersProductEntryController.CustomerProductReport)
+router.post("/CreateCustomerProductEntry", AuthVerifyMiddleware, CustomersProductEntryController.CreateCustomerProductEntry)
+router.get("/CustomerProductEntryList/:pageNo/:perPage/:searchKeyword", AuthVerifyMiddleware, CustomersProductEntryController.CustomerProductEntryList)
+router.get("/DeleteCustomerProductEntry/:id", AuthVerifyMiddleware, CustomersProductEntryController.DeleteCustomerProductEntry)
+router.post("/CustomerProductReport", AuthVerifyMiddleware, CustomersProductEntryController.CustomerProductReport)
 
 // Suppliers
 router.post("/CreateSuppliers",AuthVerifyMiddleware,SuppliersController.CreateSuppliers)
@@ -157,7 +157,7 @@ router.get("/PurchaseSummary",AuthVerifyMiddleware,PurchasesController.PurchaseS
 
 // Sales
 router.post("/CreateSales",AuthVerifyMiddleware,SalesController.CreateSales)
-router.get("/SalesList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,SalesController.SalesList)
+router.get("/SalesList/:pageNo/:perPage/:searchKeyword/:customerId?",AuthVerifyMiddleware,SalesController.SalesList)
 router.get("/SalesDelete/:id",AuthVerifyMiddleware,SalesController.SalesDelete)
 router.post("/SalesByDate",AuthVerifyMiddleware,SalesController.SalesByDate)
 router.get("/SalesSummary",AuthVerifyMiddleware,SalesController.SaleSummery)
@@ -166,7 +166,9 @@ router.get("/SalesSummary",AuthVerifyMiddleware,SalesController.SaleSummery)
 router.post("/CreateReturns",AuthVerifyMiddleware,ReturnsController.CreateReturns)
 router.get("/ReturnsList/:pageNo/:perPage/:searchKeyword",AuthVerifyMiddleware,ReturnsController.ReturnList)
 router.get("/ReturnsDelete/:id",AuthVerifyMiddleware,ReturnsController.ReturnsDelete)
+router.get("/ReturnProductsDropdown",AuthVerifyMiddleware,ReturnsController.ReturnProductsDropdown)
+router.get("/ReturnSlipDropdown", AuthVerifyMiddleware, ReturnsController.ReturnSlipDropdown);
 router.post("/ReturnByDate",AuthVerifyMiddleware,ReturnsController.ReturnByDate)
-router.get("/ReturnSummary",AuthVerifyMiddleware,ReturnsController.ReturnSummery)
+// router.get("/ReturnSummary",AuthVerifyMiddleware,ReturnsController.ReturnSummery)
 
 module.exports=router;

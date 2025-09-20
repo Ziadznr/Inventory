@@ -58,6 +58,16 @@ const CustomerLayout = (props) => {
       url: "/customer-stock",
       subMenu: [
         { title: "Stock List", icon: <BsCircle size={16} />, url: "/CustomerProductListPage" },
+        { 
+        title: "My Product Entries", 
+        icon: <BsCircle size={16} />, 
+        url: "/my-entries" // Link to the CustomerProductEntryList page
+      },
+      { 
+        title: "Take From Central Stock", 
+        icon: <BsCircle size={16} />, 
+        url: "/TakeFromUniversity" 
+      },
       ],
     },
   ];

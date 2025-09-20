@@ -12,6 +12,7 @@ const CustomerProductEntryList = () => {
   const [searchKeyword, setSearchKeyword] = useState("0");
   const [perPage, setPerPage] = useState(20);
   const [pageNo, setPageNo] = useState(1);
+  
 
   const rawList = useSelector((state) => state.customerProductEntry.list);
   const DataList = useMemo(() => rawList || [], [rawList]);
@@ -29,9 +30,7 @@ const CustomerProductEntryList = () => {
     CustomerProductEntryListRequest(pageNo, perPage, searchKeyword);
   }, [pageNo, perPage, searchKeyword]);
 
-  const handlePageClick = (event) => {
-    setPageNo(event.selected + 1);
-  };
+  const handlePageClick = (event) => setPageNo(event.selected + 1);
 
   const perPageOnChange = async (e) => {
     const value = parseInt(e.target.value);
@@ -169,6 +168,7 @@ const CustomerProductEntryList = () => {
                 <th>Payslip</th>
                 <th>Product</th>
                 <th>Qty</th>
+                <th>Available Qty</th>
                 <th>Unit Price</th>
                 <th>Total</th>
                 <th>Purchase Date</th>
@@ -178,16 +178,15 @@ const CustomerProductEntryList = () => {
             <tbody>
               {sortedData.length > 0 ? (
                 (() => {
-                  let rowCounter = 0;
-                  return sortedData.map((item, i) =>
-                    Array.isArray(item.Products) && item.Products.length > 0 ? (
-                      item.Products.map((p, idx) => {
-                        rowCounter++;
-                        return (
+                  let entryCounter = 0;
+                  return sortedData.map((item, i) => {
+                    entryCounter++;
+                    return Array.isArray(item.Products) && item.Products.length > 0
+                      ? item.Products.map((p, idx) => (
                           <tr key={`${i}-${idx}`}>
                             {idx === 0 && (
                               <>
-                                <td rowSpan={item.Products.length}>{rowCounter}</td>
+                                <td rowSpan={item.Products.length}>{entryCounter}</td>
                                 <td rowSpan={item.Products.length}>{item.CustomerName}</td>
                                 <td rowSpan={item.Products.length}>{item.Category}</td>
                                 <td rowSpan={item.Products.length}>{item.FacultyName}</td>
@@ -198,6 +197,7 @@ const CustomerProductEntryList = () => {
                             )}
                             <td>{p.ProductName}</td>
                             <td>{p.Qty}</td>
+                            <td>{p.AvailableQty ?? p.Qty}</td>
                             <td>
                               <CurrencyFormat
                                 value={p.UnitPrice}
@@ -226,67 +226,25 @@ const CustomerProductEntryList = () => {
                                   >
                                     <AiOutlineEye size={15} />
                                   </button>
-                                  <button
-                                    onClick={() => generateInvoicePDF(item)}
-                                    className="btn btn-outline-primary btn-sm"
-                                  >
-                                    PDF
-                                  </button>
+                                  
+  <button
+    onClick={() => generateInvoicePDF(item)}
+    className="btn btn-outline-primary btn-sm"
+  >
+    PDF
+  </button>
+
                                 </td>
                               </>
                             )}
                           </tr>
-                        );
-                      })
-                    ) : (
-                      <tr key={i}>
-                        <td>{++rowCounter}</td>
-                        <td>{item.CustomerName}</td>
-                        <td>{item.Category}</td>
-                        <td>{item.FacultyName}</td>
-                        <td>{item.DepartmentName}</td>
-                        <td>{item.SectionName}</td>
-                        <td>{item.PayslipNumber}</td>
-                        <td>{item.Products?.ProductName || "-"}</td>
-                        <td>{item.Products?.Qty || "-"}</td>
-                        <td>
-                          <CurrencyFormat
-                            value={item.Products?.UnitPrice || item.Price}
-                            displayType="text"
-                            thousandSeparator
-                            prefix="$"
-                          />
-                        </td>
-                        <td>
-                          <CurrencyFormat
-                            value={item.Products?.Total || item.Total}
-                            displayType="text"
-                            thousandSeparator
-                            prefix="$"
-                          />
-                        </td>
-                        <td>{moment(item.PurchaseDate).format("DD-MM-YYYY")}</td>
-                        <td>
-                          <button
-                            onClick={() => DetailsPopUp(item)}
-                            className="btn btn-outline-success btn-sm me-2"
-                          >
-                            <AiOutlineEye size={15} />
-                          </button>
-                          <button
-                            onClick={() => generateInvoicePDF(item)}
-                            className="btn btn-outline-primary btn-sm"
-                          >
-                            PDF
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  );
+                        ))
+                      : null;
+                  });
                 })()
               ) : (
                 <tr>
-                  <td colSpan="13" className="text-center text-muted">
+                  <td colSpan="14" className="text-center text-muted">
                     No data found
                   </td>
                 </tr>
@@ -336,7 +294,6 @@ const CustomerProductEntryList = () => {
         >
           {selectedEntry && (
             <div>
-              {/* Header */}
               <div style={{ display: "flex", alignItems: "center", marginBottom: 40 }}>
                 <img
                   src="/patuakhali-science-technology-university-logo-png_seeklogo-432827.png"
@@ -348,40 +305,39 @@ const CustomerProductEntryList = () => {
                     Patuakhali Science and Technology University
                   </h6>
                   <div style={{ height: 15 }} />
-                  <h2 style={{ margin: 0, fontSize: 20 }}>পটুয়াখালী বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়</h2>
+                  <h2 style={{ margin: 0, fontSize: 20 }}>
+                    পটুয়াখালী বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়
+                  </h2>
                   <p style={{ margin: 0, fontSize: 14 }}>দুমকি, পটুয়াখালী-৮৬৬০</p>
                 </div>
               </div>
 
               <hr style={{ marginBottom: 25 }} />
 
-              {/* Invoice Dates */}
               <div style={{ textAlign: "right", marginBottom: 25 }}>
                 <p style={{ fontSize: 14 }}>
                   Issue Date: {moment(selectedEntry.CreatedDate).format("DD-MM-YYYY")}
                 </p>
               </div>
 
-              {/* Customer Details */}
               <div style={{ marginBottom: 25 }}>
                 <h3>Customer Details:</h3>
                 <p>Name: {selectedEntry.CustomerName || "-"}</p>
                 <p>Mobile No: {selectedEntry.Phone || "-"}</p>
                 <p>Email: {selectedEntry.Email || "-"}</p>
                 <p>Category: {selectedEntry.Category || "-"}</p>
-                {["chairman", "teacher", "dean"].includes(
-                  selectedEntry.Category?.toLowerCase()
-                ) && <p>Faculty: {selectedEntry.FacultyName || "-"}</p>}
-                {["chairman", "teacher"].includes(
-                  selectedEntry.Category?.toLowerCase()
-                ) && <p>Department: {selectedEntry.DepartmentName || "-"}</p>}
+                {["chairman", "teacher", "dean"].includes(selectedEntry.Category?.toLowerCase()) && (
+                  <p>Faculty: {selectedEntry.FacultyName || "-"}</p>
+                )}
+                {["chairman", "teacher"].includes(selectedEntry.Category?.toLowerCase()) && (
+                  <p>Department: {selectedEntry.DepartmentName || "-"}</p>
+                )}
                 {selectedEntry.Category?.toLowerCase() === "officer" && (
                   <p>Section: {selectedEntry.SectionName || "-"}</p>
                 )}
                 <p>Payslip: {selectedEntry.PayslipNumber || "-"}</p>
               </div>
 
-              {/* Products Table */}
               <h3>Products:</h3>
               <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 25 }}>
                 <thead>
@@ -389,6 +345,7 @@ const CustomerProductEntryList = () => {
                     <th style={{ border: "1px solid #000", padding: 8 }}>Purchase Date</th>
                     <th style={{ border: "1px solid #000", padding: 8 }}>Product</th>
                     <th style={{ border: "1px solid #000", padding: 8 }}>Qty</th>
+                    <th style={{ border: "1px solid #000", padding: 8 }}>Available Qty</th>
                     <th style={{ border: "1px solid #000", padding: 8 }}>Unit Price</th>
                     <th style={{ border: "1px solid #000", padding: 8 }}>Total</th>
                   </tr>
@@ -397,16 +354,19 @@ const CustomerProductEntryList = () => {
                   {Array.isArray(selectedEntry.Products) &&
                     selectedEntry.Products.map((p, idx) => (
                       <tr key={idx}>
-                        {idx === 0 ? (
+                        {idx === 0 && (
                           <td
                             rowSpan={selectedEntry.Products.length}
                             style={{ border: "1px solid #000", padding: 8, verticalAlign: "top" }}
                           >
                             {moment(selectedEntry.PurchaseDate).format("DD-MM-YYYY")}
                           </td>
-                        ) : null}
+                        )}
                         <td style={{ border: "1px solid #000", padding: 8 }}>{p.ProductName}</td>
                         <td style={{ border: "1px solid #000", padding: 8 }}>{p.Qty}</td>
+                        <td style={{ border: "1px solid #000", padding: 8 }}>
+                          {p.AvailableQty ?? p.Qty}
+                        </td>
                         <td style={{ border: "1px solid #000", padding: 8 }}>
                           ${p.UnitPrice?.toLocaleString() || 0}
                         </td>
@@ -418,13 +378,11 @@ const CustomerProductEntryList = () => {
                 </tbody>
               </table>
 
-              {/* Summary */}
               <div style={{ marginBottom: 35 }}>
                 <p>Other Cost: ${selectedEntry.OtherCost || 0}</p>
                 <h3>Grand Total: ${selectedEntry.Total || 0}</h3>
               </div>
 
-              {/* Signatures */}
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: 50 }}>
                 <div>
                   <p>_________________________</p>

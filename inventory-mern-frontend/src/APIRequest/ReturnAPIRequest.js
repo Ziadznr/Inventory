@@ -92,32 +92,44 @@ export async function CustomerDropDownRequest(category = null, facultyID = null,
 
 
 // ------------------ Product Dropdown ------------------
-export async function ProductDropDownRequest() {
+export async function ProductDropDownRequest(customerId, slipNo) {
+  if (!customerId || !slipNo) {
+    ErrorToast("Please select Customer and SlipNo first");
+    store.dispatch(SetProductDropDown([]));
+    return [];
+  }
+
   try {
     store.dispatch(ShowLoader());
-    const URL = `${BaseURL}/ProductsDropDown`;
+
+    // Build URL with query params
+    const URL = `${BaseURL}/ReturnProductsDropdown?customerId=${customerId}&slipNo=${encodeURIComponent(slipNo)}`;
+
+    console.log("📌 ProductDropDownRequest URL:", URL);
+
     const result = await axios.get(URL, AxiosHeader);
 
     if (result.status === 200 && result.data?.status === "success") {
       const data = (result.data?.data || []).map(p => ({
         ...p,
-        Stock: p.Stock ?? 0, // Ensure Stock is always defined
+        Stock: p.Stock ?? 0, // ensure Stock is defined
       }));
 
-      console.log("📌 ProductDropDown final data:", data);
+      console.log("📌 ProductDropdown final data:", data);
+
       store.dispatch(SetProductDropDown(data));
 
-      if (data.length === 0) ErrorToast("No Product Found");
+      if (data.length === 0) ErrorToast("No Product Found for this Customer & SlipNo");
       return data;
     } else {
       store.dispatch(SetProductDropDown([]));
-      ErrorToast("Something Went Wrong");
+      ErrorToast("No Product Found for this Customer & SlipNo");
       return [];
     }
   } catch (e) {
     console.error("ProductDropDownRequest Error:", e);
     store.dispatch(SetProductDropDown([]));
-    ErrorToast("Something Went Wrong");
+    ErrorToast("Something Went Wrong while fetching products");
     return [];
   } finally {
     store.dispatch(HideLoader());
@@ -231,3 +243,33 @@ export async function SectionDropdownRequest() {
   }
 };
 
+// ------------------ Slip Dropdown ------------------
+export async function SlipDropdownRequest(customerId) {
+  if (!customerId) {
+    ErrorToast("Customer ID is required for Slip Dropdown");
+    return [];
+  }
+
+  try {
+    store.dispatch(ShowLoader());
+    const URL = `${BaseURL}/ReturnSlipDropdown?customerId=${customerId}`;
+    console.log("📌 SlipDropdownRequest URL:", URL);
+
+    const result = await axios.get(URL, AxiosHeader);
+
+    if (result.status === 200 && result.data?.status === "success") {
+      const data = result.data?.data || [];
+      console.log("📌 SlipDropdown final data:", data);
+      return data;
+    } else {
+      console.warn("SlipDropdownRequest: no slip found or status not success");
+      return [];
+    }
+  } catch (e) {
+    console.error("SlipDropdownRequest error:", e);
+    ErrorToast("Something went wrong while fetching slip numbers");
+    return [];
+  } finally {
+    store.dispatch(HideLoader());
+  }
+}
