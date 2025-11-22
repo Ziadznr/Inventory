@@ -38,11 +38,17 @@ app.use(limiter);
 
 
 async function connectDB() {
+    // Check if MONGO_URI exists in the environment variables
+    if (!process.env.MONGO_URI) {
+        console.error('❌ MONGO_URI is not set in the environment variables.');
+        return;
+    }
+
     try {
         // Connect using Mongoose
         await mongoose.connect(process.env.MONGO_URI, {
-            autoIndex: true,          // automatically build indexes
-            serverSelectionTimeoutMS: 5000, // optional: timeout after 5s
+            autoIndex: true,          // Automatically build indexes
+            serverSelectionTimeoutMS: 5000, // Optional: Timeout after 5 seconds
         });
 
         console.log('✅ MongoDB Connected');
@@ -56,7 +62,6 @@ async function connectDB() {
         }
 
         console.warn('⚠️ App will continue running, but database is not connected.');
-        // Optional: process.exit(1); // Uncomment if you want to stop the app
     }
 }
 

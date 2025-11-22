@@ -3,6 +3,8 @@ const CustomersModel = require("../../models/Customers/CustomersModel");
 const CustomersProductEntryModel = require("../../models/Customers/CustomersProductEntryModel");
 const CustomerProductReportService = require("../../services/report/CustomerProductReportService");
 const ReturnsProductsModel = require("../../models/Returns/ReturnsProductsModel"); // 🔹 Import returns model
+const SendEmailUtility = require("../../utility/SendEmailUtility");
+
 
 // ---------------- CREATE ENTRY ----------------
 exports.CreateCustomerProductEntry = async (req, res) => {
@@ -39,7 +41,44 @@ exports.CreateCustomerProductEntry = async (req, res) => {
 
     await newEntry.save();
 
-    res.status(201).json({ status: "success", message: "Customer product entry created successfully", data: newEntry });
+    // -----------------------------------------------------
+    // ✅ SEND EMAIL TO CUSTOMER AFTER SUCCESSFUL CREATION
+    // -----------------------------------------------------
+    try {
+      const emailText = `
+Dear ${customer.CustomerName},
+
+Your purchase entry has been recorded successfully.
+
+Payslip Number : ${PayslipNumber}
+Total Amount   : ${Total}
+Purchase Date  : ${PurchaseDate}
+Address        : ${PurchaseAddress}
+
+Thank you for your purchase.
+
+Inventory Management System
+`;
+
+      await SendEmailUtility(
+        customer.CustomerEmail,
+        emailText,
+        "Purchase Entry Confirmation",
+        [] // no attachments
+      );
+    } catch (err) {
+      console.error("Failed to send email:", err);
+      // Email failure does NOT stop main response
+    }
+
+    // -----------------------------------------------------
+
+    res.status(201).json({
+      status: "success",
+      message: "Customer product entry created successfully",
+      data: newEntry
+    });
+
   } catch (error) {
     console.error("CreateCustomerProductEntry Error:", error);
     res.status(500).json({ status: "error", message: error.message });
